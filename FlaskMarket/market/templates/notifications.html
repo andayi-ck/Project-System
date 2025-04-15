@@ -1,0 +1,38 @@
+
+
+
+
+{% extends 'base.html' %}
+{% block title %}Notifications{% endblock %}
+{% block content %}
+    <style>
+        body {
+            background-color: rgb(236, 243, 255);
+        }
+        .floating-window {
+            padding: 20px;
+            width: 600px;
+            background-color: rgba(209, 229, 236, 0.26);
+            border-radius: 10px;
+            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.6);
+            margin: 20px auto;
+        }
+        .notification {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+        }
+    </style>
+    <div class="floating-window">
+        <h1>Notifications</h1>
+        {% for notif in notifications %}
+            <div class="notification">
+                <p>{{ notif.content }} ({{ notif.created_at.strftime('%Y-%m-%d %H:%M') }})</p>
+            </div>
+        {% endfor %}
+        {% if not notifications %}
+            <p>No new notifications.</p>
+        {% endif %}
+    </div>
+{% endblock %}

@@ -1,0 +1,56 @@
+
+
+
+
+
+{% extends 'base.html' %}
+{% block title %}Vet Tips{% endblock %}
+{% block content %}
+    <style>
+        body { background-color: rgb(236, 243, 255); }
+        .floating-window {
+            padding: 20px;
+            width: 800px;
+            background-color: rgba(209, 229, 236, 0.26);
+            border-radius: 10px;
+            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.6);
+            margin: 20px auto;
+        }
+        .tip {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+        }
+        .alert-success { background-color: #d4edda; color: #155724; }
+    </style>
+    <div class="floating-window">
+        <h1>Veterinary Tips</h1>
+        {% for message in get_flashed_messages(with_categories=true) %}
+            <div class="alert alert-{{ message[0] }}">{{ message[1] }}</div>
+        {% endfor %}
+        {% if current_user.role == 'vet' %}
+            <h2>Post a Tip</h2>
+            <form method="POST">
+                {{ form.hidden_tag() }}
+                <div>
+                    {{ form.title.label }} {{ form.title(class="form-control") }}
+                </div>
+                <div>
+                    {{ form.content.label }} {{ form.content(class="form-control", rows=5) }}
+                </div>
+                <div>
+                    {{ form.submit(class="btn btn-primary") }}
+                </div>
+            </form>
+        {% endif %}
+        <h2>Latest Tips</h2>
+        {% for tip in tips %}
+            <div class="tip">
+                <h3>{{ tip.title }}</h3>
+                <p><strong>By {{ tip.author.username }}:</strong> {{ tip.posted_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                <p>{{ tip.content }}</p>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

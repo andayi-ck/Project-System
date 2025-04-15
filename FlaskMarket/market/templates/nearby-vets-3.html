@@ -1,0 +1,593 @@
+
+
+{% extends 'base.html' %}
+{% block title %}
+    LIVESTOCK MANAGEMENT SYSTEM - Nearby Vets (Page 3)
+{% endblock %}
+{% block content %}
+<style>
+    /* Same CSS as nearby-vets.html and nearby-vets-1.html */
+    .small-box {
+        display: inline-block;
+        padding: 8px 16px;
+        border: 1px solid #fff;
+        border-radius: 20px;
+        background-color: transparent;
+        color: black;
+        font-size: 14px;
+        font-weight: 600;
+        text-align: center;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        text-decoration: none;
+        transition: all 0.3s ease-in-out;
+    }
+    .small-box:hover {
+        background-color: rgba(17, 163, 163, 0.2);
+        cursor: pointer;
+    }
+    .container2 {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        align-items: center;
+        margin-top: 20px;
+        position: absolute;
+        top: 40px;
+        left: -50px;
+    }
+    .container {
+        width: 100%;
+        margin: 0 auto;
+        position: absolute;
+        top: 280px;
+        left: 100px;
+    }
+    .custom-hr {
+        position: absolute;
+        top: -150px;
+        left: 240px;
+        width: 60%;
+        height: 3px;
+        background-color: rgb(182, 138, 18);
+        border-radius: 10px;
+        border: none;
+    }
+    .cards-wrapper {
+        position: absolute;
+        top: -40px;
+        left: 200px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        justify-content: flex-start;
+    }
+    .doctor-card {
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        width: 300px;
+        overflow: hidden;
+        transition: transform 0.2s;
+    }
+    .doctor-card:hover {
+        transform: translateY(-5px);
+    }
+    .doctor-image {
+        width: 100%;
+        height: 150px;
+        position: relative;
+    }
+    .doctor-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        display: block;
+    }
+    .price-tag {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #fff;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 14px;
+        font-weight: bold;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+    .video-icon {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: #fff;
+        padding: 5px;
+        border-radius: 50%;
+        font-size: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+    .doctor-info {
+        padding: 15px;
+    }
+    .doctor-name {
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+        margin: 0;
+    }
+    .specialty {
+        font-size: 14px;
+        color: #666;
+        margin: 5px 0;
+        display: flex;
+        align-items: center;
+    }
+    .rating {
+        color: #f39c12;
+        margin-left: 5px;
+    }
+    .rating::before {
+        content: '★';
+        margin-right: 3px;
+    }
+    .details {
+        font-size: 14px;
+        color: #666;
+        margin: 10px 0;
+    }
+    .details li {
+        margin-bottom: 5px;
+        display: flex;
+        align-items: center;
+    }
+    .details li::before {
+        content: '○';
+        margin-right: 8px;
+        color: #3498db;
+        font-size: 10px;
+    }
+    .buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+    }
+    .schedule-btn, .profile-btn {
+        flex: 1;
+        padding: 8px;
+        border-radius: 4px;
+        text-align: center;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+    .schedule-btn {
+        background: #fff;
+        border: 1px solid #3498db;
+        color: #3498db;
+    }
+    .schedule-btn:hover {
+        background: #3498db;
+        color: #fff;
+    }
+    .profile-btn {
+        background: #3498db;
+        border: none;
+        color: #fff;
+    }
+    .profile-btn:hover {
+        background: #2980b9;
+    }
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1001;
+        justify-content: center;
+        align-items: center;
+    }
+    .modal-content {
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        width: 400px;
+        max-width: 90%;
+        position: relative;
+    }
+    .close-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        font-size: 24px;
+        cursor: pointer;
+        color: #333;
+    }
+    .modal-content h3 {
+        margin-top: 0;
+        font-family: 'Nunito', sans-serif;
+        color: chocolate;
+    }
+    .modal-content form {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .modal-content label {
+        font-size: 14px;
+        color: #333;
+        font-family: 'Montserrat', sans-serif;
+    }
+    .modal-content input, .modal-content select {
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+        font-family: 'Montserrat', sans-serif;
+    }
+    .modal-content button {
+        padding: 10px;
+        background: #3498db;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        font-family: 'Nunito', sans-serif;
+    }
+    .modal-content button:hover {
+        background: #2980b9;
+    }
+    .doctor-card {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+    }
+    .doctor-card.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    
+    .pagination {
+        position: absolute;
+        bottom: -130px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 15px;
+    }
+    
+    .pagination a {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 30px;
+        height: 30px;
+        background-color: #3498db;
+        color: #fff;
+        font-size: 14px;
+        font-weight: bold;
+        text-decoration: none;
+        border-radius: 50%; /* Makes it a circle */
+        transition: background-color 0.3s ease, transform 0.3s ease;
+        position: relative; /* For tooltip positioning */
+    }
+    
+    .pagination a:hover {
+        background-color: #2980b9;
+        transform: scale(1.1); /* Slight scale-up on hover */
+    }
+    
+    /* Tooltip styles */
+    .pagination a::after {
+        content: attr(data-tooltip); /* Uses the data-tooltip attribute for content */
+        position: absolute;
+        bottom: 40px; /* Position above the circle */
+        background-color:rgb(17, 51, 66);
+        color: #fff;
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-size: 12px;
+        white-space: nowrap;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.2s ease;
+        pointer-events: none; /* Prevents tooltip from interfering with hover */
+    }
+
+    
+    .pagination a:hover::after {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0); /* New: Slide up into place */
+    }
+    
+    /* Active page styling */
+    .pagination a.active {
+        background-color: #f39c12; /* Orange to indicate current page */
+        transform: scale(1.2); /* Slightly larger for emphasis */
+    }
+    
+
+</style>
+
+<div class="container">
+    <img src="https://media.istockphoto.com/id/1205560316/photo/smart-agritech-livestock-farming.jpg?s=612x612&w=0&k=20&c=Dv1kEQYiKalRSaeqDyFjFa54Gj6NKKOrx9Muk1bBlCg="
+        style="border: none; position: absolute; top: -200px; left: -70px; width: 264px; height: 122px; border-radius: 10px; opacity: 0.50;">
+    <p class="text-left" style="font-weight: bold; color: chocolate; font-size: 14px; top: -158px; left: 640px; position: absolute; font-family: 'Montserrat', sans-serif; font-size: 1.0rem;">LAP-PLATFORM</p>
+    <p class="text-left" style="font-weight: bold; color: chocolate; font-size: 38px; left: 640px; top: -140px; position: absolute; font-family: 'Nunito', sans-serif; font-size: 2.5rem;">NEARBY VETS</p>
+
+    <a href="{{ url_for('home_page') }}"><div class="small-box" style="width: 100px; height: 40px; position: absolute; top: -30px; left: -40px;">Home</div></a>
+    <a href="{{ url_for('nearby_vets') }}"><div class="small-box" style="width: 100px; height: 60px; position: absolute; top: 40px; left: -40px;">Symptom Checker</div></a>
+    <a href="{{ url_for('nearby_vets_2') }}"><div class="small-box" style="width: 100px; height: 80px; position: absolute; top: 120px; left: -40px;">Search for Vet</div></a>
+    <a href="{{ url_for('connect_farmers') }}"><div class="small-box" style="width: 110px; height: 80px; position: absolute; top: 200px; left: -40px;">Connect with Farmer</div></a>
+
+    <hr class="custom-hr">
+
+    <div class="cards-wrapper">
+        <!-- Vet 13 -->
+        <div class="doctor-card" data-vet-id="9" data-vet-name="Sanaa Jappani">
+            <div class="doctor-image">
+                <img src="https://media.istockphoto.com/id/1399565057/photo/veterinarian-examining-a-cat-at-the-clinic.webp?a=1&b=1&s=612x612&w=0&k=20&c=YXJ0eWNsZQ==">
+                <div class="price-tag"></div>
+                <div class="video-icon"></div>
+            </div>
+            <div class="doctor-info">
+                <h3 class="doctor-name">Sanaa Jappani</h3>
+                <p class="specialty" style="font-weight: bold;">BlackLeg<span class="rating">4.8 (42 reviews)</span></p>
+                <ul class="details">
+                    <li>Kisumu Pet Clinic</li>
+                    <li>11 years experience</li>
+                    <li>Next available: Monday, 10:00 AM</li>
+                    <li>All Animals</li>
+                </ul>
+                <div class="buttons">
+                    <button class="schedule-btn" onclick="openScheduleModal(this)">Schedule</button>
+                    <button class="profile-btn" onclick="viewProfile(this)">View Profile</button>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Vet 14 -->
+        <div class="doctor-card" data-vet-id="10" data-vet-name="Ethan Mwangi">
+            <div class="doctor-image">
+                <img src="https://media.istockphoto.com/id/1324375125/photo/veterinarian-examining-a-cute-little-puppy-in-clinic.webp?a=1&b=1&s=612x612&w=0&k=20&c=YXJ0eWNsZQ==">
+                <div class="price-tag"></div>
+                <div class="video-icon"></div>
+            </div>
+            <div class="doctor-info">
+                <h3 class="doctor-name">Ethan Mwangi</h3>
+                <p class="specialty" style="font-weight: bold;">Foot Rot<span class="rating">4.7 (39 reviews)</span></p>
+                <ul class="details">
+                    <li>Nairobi Dog Haven</li>
+                    <li>8 years experience</li>
+                    <li>Next available: Tuesday, 11:00 AM</li>
+                    <li>All Ruminants</li>
+                </ul>
+                <div class="buttons">
+                    <button class="schedule-btn" onclick="openScheduleModal(this)">Schedule</button>
+                    <button class="profile-btn" onclick="viewProfile(this)">View Profile</button>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Vet 15 -->
+        <div class="doctor-card" data-vet-id="11" data-vet-name="Amina Juma">
+            <div class="doctor-image">
+                <img src="https://media.istockphoto.com/id/1349893658/photo/veterinarian-examining-a-sheep-in-a-barn.webp?a=1&b=1&s=612x612&w=0&k=20&c=YXJ0eWNsZQ==">
+                <div class="price-tag"></div>
+                <div class="video-icon"></div>
+            </div>
+            <div class="doctor-info">
+                <h3 class="doctor-name">Amina Juma</h3>
+                <p class="specialty" style="font-weight: bold;">Sheep Scab Specialist<span class="rating">4.6 (35 reviews)</span></p>
+                <ul class="details">
+                    <li>Nyeri Livestock Clinic</li>
+                    <li>9 years experience</li>
+                    <li>Next available: Thursday, 9:00 AM</li>
+                    <li>Sheep and goats</li>
+                </ul>
+                <div class="buttons">
+                    <button class="schedule-btn" onclick="openScheduleModal(this)">Schedule</button>
+                    <button class="profile-btn" onclick="viewProfile(this)">View Profile</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vet 16 -->
+        <div class="doctor-card" data-vet-id="11" data-vet-name="Juma Katana">
+            <div class="doctor-image">
+                <img src="https://media.istockphoto.com/id/1349893658/photo/veterinarian-examining-a-sheep-in-a-barn.webp?a=1&b=1&s=612x612&w=0&k=20&c=YXJ0eWNsZQ==">
+                <div class="price-tag"></div>
+                <div class="video-icon"></div>
+            </div>
+            <div class="doctor-info">
+                <h3 class="doctor-name">Juma Katana</h3>
+                <p class="specialty" style="font-weight: bold;">Avian Botulism<span class="rating">4.6 (35 reviews)</span></p>
+                <ul class="details">
+                    <li>Nyeri Livestock Clinic</li>
+                    <li>9 years experience</li>
+                    <li>Next available: Thursday, 9:00 AM</li>
+                    <li>Birds</li>
+                </ul>
+                <div class="buttons">
+                    <button class="schedule-btn" onclick="openScheduleModal(this)">Schedule</button>
+                    <button class="profile-btn" onclick="viewProfile(this)">View Profile</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vet 17 -->
+        <div class="doctor-card" data-vet-id="11" data-vet-name="Jerry Manda">
+            <div class="doctor-image">
+                <img src="https://media.istockphoto.com/id/1349893658/photo/veterinarian-examining-a-sheep-in-a-barn.webp?a=1&b=1&s=612x612&w=0&k=20&c=YXJ0eWNsZQ==">
+                <div class="price-tag"></div>
+                <div class="video-icon"></div>
+            </div>
+            <div class="doctor-info">
+                <h3 class="doctor-name">Jerry Manda</h3>
+                <p class="specialty" style="font-weight: bold;">Epizootic Hermorrhagic Disease Specialist<span class="rating">4.6 (35 reviews)</span></p>
+                <ul class="details">
+                    <li>Nyeri Livestock Clinic</li>
+                    <li>9 years experience</li>
+                    <li>Next available: Thursday, 9:00 AM</li>
+                    <li>Cattle</li>
+                </ul>
+                <div class="buttons">
+                    <button class="schedule-btn" onclick="openScheduleModal(this)">Schedule</button>
+                    <button class="profile-btn" onclick="viewProfile(this)">View Profile</button>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Vet 18 -->
+        <div class="doctor-card" data-vet-id="11" data-vet-name="Kalei Kelly">
+            <div class="doctor-image">
+                <img src="https://media.istockphoto.com/id/1349893658/photo/veterinarian-examining-a-sheep-in-a-barn.webp?a=1&b=1&s=612x612&w=0&k=20&c=YXJ0eWNsZQ==">
+                <div class="price-tag"></div>
+                <div class="video-icon"></div>
+            </div>
+            <div class="doctor-info">
+                <h3 class="doctor-name">Kalei Kelly</h3>
+                <p class="specialty" style="font-weight: bold;">Classical Swine Fever<span class="rating">4.6 (35 reviews)</span></p>
+                <ul class="details">
+                    <li>Nyeri Livestock Clinic</li>
+                    <li>9 years experience</li>
+                    <li>Next available: Thursday, 9:00 AM</li>
+                    <li>Pigs And Cattle</li>
+                </ul>
+                <div class="buttons">
+                    <button class="schedule-btn" onclick="openScheduleModal(this)">Schedule</button>
+                    <button class="profile-btn" onclick="viewProfile(this)">View Profile</button>
+                </div>
+            </div>
+        </div>
+
+        <h2>Licensed Vets in Kenya</h2>
+        <p style="position: absolute; bottom: -40px;">Browse the official <a href="https://www.kenyavetboard.or.ke/" target="_blank">Kenya Veterinary Board (KVB)</a> directory for certified vets.</p><br>
+        <p style="position: absolute; bottom: -70px;">Or check out the <a href="https://www.kenyavets.org/" target="_blank">Kenya Veterinary Association (KVA)</a> for vet events and services.</p>
+
+
+        <div class="pagination">
+            <a href="{{ url_for('nearby_vets') }}" data-tooltip="Previous Page"><span>1</span></a>
+            <a href="{{ url_for('nearby_vets_2') }}" data-tooltip="Previous Page"><span>2</span></a>
+            <a href="{{ url_for('nearby_vets_3') }}" data-tooltip="Current Page" class="active"><span>3</span></a>
+        </div>
+    </div>
+
+</div>
+
+<!-- Schedule Modal -->
+<div id="scheduleModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal()">×</span>
+        <h3>Schedule Appointment with <span id="modalVetName"></span></h3>
+        <form id="scheduleForm" action="{{ url_for('schedule_appointment') }}" method="POST">
+            <input type="hidden" id="vetId" name="vet_id">
+            <label for="appointmentDate">Select Date:</label>
+            <input type="date" id="appointmentDate" name="appointmentDate" required>
+            <label for="appointmentTime">Select Time:</label>
+            <select id="appointmentTime" name="appointmentTime" required>
+                <option value="09:00 AM">09:00 AM</option>
+                <option value="10:00 AM">10:00 AM</option>
+                <option value="11:00 AM">11:00 AM</option>
+                <option value="02:00 PM">02:00 PM</option>
+                <option value="03:00 PM">03:00 PM</option>
+            </select>
+            <label for="animalType">Animal Type:</label>
+            <input type="text" id="animalType" name="animalType" placeholder="e.g., Dog, Cow, Horse" required>
+            <label for="ownerName">Your Name:</label>
+            <input type="text" id="ownerName" name="ownerName" required>
+            <label for="ownerEmail">Your Email:</label>
+            <input type="email" id="ownerEmail" name="ownerEmail" required>
+            <button type="submit">Book Appointment</button>
+        </form>
+    </div>
+</div>
+
+<!-- Profile Modal -->
+<div id="profileModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeProfileModal()">×</span>
+        <h3>Profile of <span id="modalProfileVetName"></span></h3>
+        <div id="vetProfileDetails">
+            <p><strong>Specialty:</strong> <span id="modalVetSpecialty"></span></p>
+            <p><strong>Clinic:</strong> <span id="modalVetClinic"></span></p>
+            <p><strong>Experience:</strong> <span id="modalVetExperience"></span></p>
+            <p><strong>Availability:</strong> <span id="modalVetAvailability"></span></p>
+            <p><strong>Accepting:</strong> <span id="modalVetAccepting"></span></p>
+            <p><strong>Rating:</strong> <span id="modalVetRating"></span></p>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const cards = document.querySelectorAll(".doctor-card");
+        cards.forEach((card, index) => {
+            setTimeout(() => {
+                card.classList.add("show");
+            }, index * 200);
+        });
+    });
+
+    let currentVetId = null;
+
+    function openScheduleModal(button) {
+        const card = button.closest('.doctor-card');
+        const vetName = card.getAttribute('data-vet-name');
+        currentVetId = card.getAttribute('data-vet-id');
+        document.getElementById('modalVetName').textContent = vetName;
+        document.getElementById('vetId').value = currentVetId;
+        document.getElementById('scheduleModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('scheduleModal').style.display = 'none';
+        document.getElementById('scheduleForm').reset();
+    }
+
+    function viewProfile(button) {
+        const card = button.closest('.doctor-card');
+        const vetName = card.getAttribute('data-vet-name');
+        const specialty = card.querySelector('.specialty').textContent.split('★')[0].trim();
+        const details = card.querySelectorAll('.details li');
+        const clinic = details[0].textContent;
+        const experience = details[1].textContent;
+        const availability = details[2].textContent.replace('Next available: ', '');
+        const accepting = details[3].textContent;
+        const rating = card.querySelector('.rating').textContent;
+
+        document.getElementById('modalProfileVetName').textContent = vetName;
+        document.getElementById('modalVetSpecialty').textContent = specialty;
+        document.getElementById('modalVetClinic').textContent = clinic;
+        document.getElementById('modalVetExperience').textContent = experience;
+        document.getElementById('modalVetAvailability').textContent = availability;
+        document.getElementById('modalVetAccepting').textContent = accepting;
+        document.getElementById('modalVetRating').textContent = rating;
+
+        document.getElementById('profileModal').style.display = 'flex';
+    }
+
+    function closeProfileModal() {
+        document.getElementById('profileModal').style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+        const scheduleModal = document.getElementById('scheduleModal');
+        const profileModal = document.getElementById('profileModal');
+        if (event.target === scheduleModal) {
+            closeModal();
+        }
+        if (event.target === profileModal) {
+            closeProfileModal();
+        }
+    };
+</script>
+{% endblock %}
