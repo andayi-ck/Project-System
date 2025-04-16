@@ -1,6 +1,8 @@
 
 
 
+
+
 {% extends 'base.html' %}
 {% block title %}
     LIVESTOCK MANAGEMENT SYSTEM
@@ -794,6 +796,34 @@
         }
 
 
+        .notification-bell {
+            position: absolute;
+            top: 360px;
+            left: 20px;
+            font-size: 24px;
+            text-decoration: none;
+            color: black;
+        }
+        .badge {
+            background: rgb(25, 28, 29);
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 12px;
+            position: relative;
+            top: -10px;
+            left: -5px;
+        }
+        .ringing {
+            animation: ring 0.5s ease-in-out infinite alternate;
+        }
+        @keyframes ring {
+            0% { transform: rotate(-15deg); }
+            100% { transform: rotate(15deg); }
+        }
+
+
+
 
     </style>
 
@@ -835,7 +865,7 @@
 
         
             <img class="rounded-circle img-thumbnail" src="https://media.istockphoto.com/id/1034895924/photo/group-of-farm-animals.webp?a=1&b=1&s=612x612&w=0&k=20&c=0NcK9I48g5Uan3BtKjJsMKEhuAagd98kVl1xhFO53ZI="
-            style="border: none; width: 180px; height: auto; position: relative; top: -40px; left: 1000px;">
+                style="border: none; width: 180px; height: auto; position: relative; top: -40px; left: 1000px;">
 
 
             <img class="my-imageB mb-4" src="https://livestockanalytics.com/hubfs/ipc-Alimentacion.png"
@@ -968,21 +998,37 @@
         
             
             <img class="menu-icon" onclick="toggleSidebar()" onmouseover="showTooltip()" onmouseout="hideTooltip()" src="https://cdn-icons-png.flaticon.com/128/3917/3917482.png" style="width: 30px; height: 30px;">
-            <img src="https://cdn-icons-png.flaticon.com/128/3914/3914501.png" style="width: 30px; height: 30px; position: absolute; top: 240px; left: 20px;">
-            <img src="https://cdn-icons-png.flaticon.com/128/3917/3917546.png" style="width: 30px; height: 30px; position: absolute; top: 300px; left: 20px;">
-
-            <a href="{{ url_for('notifications')}}">
-                <img src="https://cdn-icons-png.flaticon.com/128/18674/18674646.png" style="width: 30px; height: 30px; position: absolute; top: 360px; left: 20px;">
+            <a href="{{ url_for('tips') }}">
+                <img src="https://cdn-icons-png.flaticon.com/128/3914/3914501.png" style="width: 30px; height: 30px; position: absolute; top: 240px; left: 20px;">
+            </a>
+            <a href="{{ url_for('register_page') }}">
+                <img src="https://cdn-icons-png.flaticon.com/128/3917/3917546.png" style="width: 30px; height: 30px; position: absolute; top: 300px; left: 20px;">
             </a>
 
+    
+
+            <!-- Bell Icon -->
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('notifications') }}" class="notification-bell {% if unread_count %}ringing{% endif %}">
+                🔔
+                {% if unread_count %}
+                    <span class="badge">{{ unread_count }}</span>
+                {% endif %}
+            </a>
+            
+            {% else %}
+        
+            {% endif %}
+    
+
+
             <img ="https://media.istockphoto.com/id/1016286868/photo/agritech-concept-with-dairy-cows-in-cowshed-with-data-display.jpg?s=612x612&w=0&k=20&c=p3l_87rSWfvD9kpw6XM3FoJG1bnYpYoJntFpmjZ5KP8="
-            style="position: absolute; top: 200px; left: 870px; width: 280px; height: 150px; z-index: -12; border-radius: 10px; opacity: 0.70;">
+                style="position: absolute; top: 200px; left: 870px; width: 280px; height: 150px; z-index: -12; border-radius: 10px; opacity: 0.70;">
             
             <!-- Sidebar Navigation -->
             <div class="sidebar" id="sidebar">
             <h2 style="color: chocolate; font-size: 1.8rem; top: 10px; font: bold; left: 60px; position: absolute;">LAP PLATFORM</h2>
                 <hr>
-                
                 <a href="{{ url_for('welcome_page') }}" style="position: absolute; top: 80px; left: 40px"><img src="https://cdn-icons-png.flaticon.com/128/18561/18561855.png" style="width: 22px; height: 22px; position: absolute; top: 7px; left: -20px;">Home</a>
                 <a href="{{ url_for('livestock_dashboard') }}" style="position: absolute; top: 120px; left: 40px;"><img class="menu-icon" onclick="toggleSidebar()" onmouseout="hideTooltip()" onmouseover="showTooltip" src="https://cdn-icons-png.flaticon.com/128/3917/3917762.png" style="width: 22px; height: 22px; position: absolute; top: 7px; left: -20px;">Dashboard</a>
                 <a href="{{ url_for('tips')}}" style="position: absolute; top: 160px; left: 40px;"><img src="https://cdn-icons-png.flaticon.com/128/3914/3914501.png"style="width: 22px; height: 22px; position: absolute; top: 8px; left: -20px;">Reports</a>
@@ -1022,6 +1068,35 @@
                     }
                     return true;
                 }
+
+
+                // dynamic badges updates
+                document.addEventListener('DOMContentLoaded', function() {
+                    function updateNotificationBadge() {
+                        const bell = document.querySelector('.notification-bell');
+                        if (bell) {
+                            fetch('/notifications/count')
+                                .then(response => response.json())
+                                .then(data => {
+                                    let badge = document.querySelector('.badge');
+                                    if (data.unread_count > 0) {
+                                        if (!badge) {
+                                            badge = document.createElement('span');
+                                            badge.className = 'badge';
+                                            bell.appendChild(badge);
+                                        }
+                                        badge.textContent = data.unread_count;
+                                    } else if (badge) {
+                                        badge.remove();
+                                    }
+                                })
+                                .catch(error => console.error('Error fetching notification count:', error));
+                        }
+                    }
+                
+                    updateNotificationBadge();
+                    setInterval(updateNotificationBadge, 30000);
+                });
             </script>
             
             
@@ -1104,6 +1179,9 @@
 </body>
 
 {% endblock %}
+
+
+
 
 
 
