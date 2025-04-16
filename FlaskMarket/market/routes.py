@@ -1,3 +1,10 @@
+
+
+
+
+
+
+
 import os
 import smtplib
 import ssl
@@ -14,7 +21,7 @@ from flask import (flash, get_flashed_messages, jsonify, redirect, render_templa
 from flask_login import LoginManager, UserMixin, current_user, login_required, login_user, logout_user
 from market import app, bcrypt, db, login_manager
 from market.forms import LoginForm, PurchaseItemForm, RegisterForm
-from market.models import Illness, Item, User, Veterinary, Notification, Campaign, Tip, Message
+from market.models import Illness, Item, User, Veterinary, Campaign, Notification, Tip, Message
 
 
 @app.route('/')
@@ -24,7 +31,11 @@ def welcome_page():
 
 @app.route('/home')
 def home_page():
-    return render_template('home.html')
+    if current_user.is_authenticated:
+        unread_count = Notification.query.filter_by(user_id=current_user.id, read=False).count()
+    else:
+        unread_count = 0
+    return render_template('home.html', unread_count=unread_count)
     #  we went on to call the home.html file as can be seen above.
     # 'render_template()' basically works by rendering files.
 
@@ -164,36 +175,43 @@ def send_verification_email(email_receiver, username, token):
         print(f"Email error: {str(e)}")
 
 
+
 @app.route('/register', methods=['GET', 'POST'])
 def register_page():
     form = RegisterForm()
     if form.validate_on_submit():
-        # Create user but don’t activate yet
-        user_to_create = User(
+        # Check for existing username or email
+        if User.query.filter_by(username=form.username.data).first():
+            flash("Username already exists.", category='danger')
+            return render_template('register.html', form=form)
+        if User.query.filter_by(email_address=form.email_address.data).first():
+            flash("Email already exists.", category='danger')
+            return render_template('register.html', form=form)
+        
+        # Create new user
+        new_user = User(
             username=form.username.data,
             email_address=form.email_address.data,
-            password_hash=generate_password_hash(form.password1.data, method='pbkdf2:sha256'),
-            # password_hash=form.password1.data,  # Hash in production
-            email_verified=False  # Initially unverified
+            password_hash=generate_password_hash(form.password1.data),
+            role=form.role.data,
+            email_verified=False
         )
-        db.session.add(user_to_create)
+        db.session.add(new_user)
         db.session.commit()
 
-        # Generate verification token
-        token = s.dumps({'user_id': user_to_create.id, 'email': user_to_create.email_address}, salt='email-verify')
-        
-        # Send verification email
-        send_verification_email(user_to_create.email_address, user_to_create.username, token)
-        
-        # Redirect to the verification pending page instead of register_page
-        return redirect(url_for('verify_pending', email=user_to_create.email_address))
-        flash("A verification email has been sent. Please check your inbox (and spam) to complete registration.", category='info')
+        # Create account creation notification
+        notification = Notification(
+            user_id=new_user.id,
+            content=f"Welcome, {new_user.username}! Your account has been created successfully.",
+            read=False,
+            created_at=datetime.utcnow()
+        )
+        db.session.add(notification)
+        db.session.commit()
 
-    if form.errors != {}:
-        for err_msg in form.errors.values():
-            flash(f'There was an error with creating a user: {err_msg}', category='danger')
-            
-            
+        flash("Account created! Please verify your email.", category='success')
+        return redirect(url_for('verify_pending', email=new_user.email_address))
+    
     return render_template('register.html', form=form)
 
 
@@ -242,28 +260,33 @@ def verify_email(token):
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-
-
 @app.route('/login', methods=['GET', 'POST'])
 def login_page():
     form = LoginForm()
     if form.validate_on_submit():
-        # Check user in market.db user table
         user = User.query.filter_by(username=form.username.data).first()
         
-        if user:  # User exists
-            if check_password_hash(user.password_hash, form.password.data):  # Password matches
+        if user:
+            if check_password_hash(user.password_hash, form.password.data):
                 if user.email_verified:
                     login_user(user)
+                    notification = Notification(
+                        user_id=user.id,
+                        content=f"Welcome back, {user.username}! You have successfully logged in.",
+                        read=False,
+                        created_at=datetime.utcnow()
+                    )
+                    db.session.add(notification)
+                    db.session.commit()
                     flash(f"Welcome back, {user.username}!", category='success')
                     return redirect(url_for('home_page'))
                 else:
                     flash("Please verify your email before logging in.", category='warning')
                     return redirect(url_for('verify_pending', email=user.email_address))
-            else:  # Password doesn’t match
+            else:
                 flash("Incorrect password. Please try again.", category='danger')
-                return render_template('login.html', form=form)  # Stay on login page
-        else:  # User doesn’t exist
+                return render_template('login.html', form=form)
+        else:
             flash("Username not found. Please register to create an account.", category='danger')
             return redirect(url_for('register_page'))
     
@@ -353,6 +376,8 @@ def campaigns():
     campaigns_list = Campaign.query.order_by(Campaign.date.asc()).all()
     return render_template('campaigns.html', form=form, campaigns=campaigns_list)
 
+
+
 @app.route('/notifications')
 @login_required
 def notifications():
@@ -362,6 +387,17 @@ def notifications():
     db.session.commit()
     return render_template('notifications.html', notifications=notifications)
 
+
+
+@app.route('/notifications/count')
+@login_required
+def notifications_count():
+    unread_count = Notification.query.filter_by(user_id=current_user.id, read=False).count()
+    return jsonify({'unread_count': unread_count})
+        
+                
+    
+    
 @app.route('/logout')
 def logout_page():
     logout_user()
