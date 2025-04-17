@@ -1,38 +1,244 @@
 
 
 
-
-{% extends 'base.html' %}
-{% block title %}Notifications{% endblock %}
-{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications - Livestock Analytics</title>
     <style>
         body {
-            background-color: rgb(236, 243, 255);
+            background-color: #f5f6e9; /* Hay beige background */
+            font-family: 'Roboto', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #333;
         }
-        .floating-window {
-            padding: 20px;
-            width: 600px;
-            background-color: rgba(209, 229, 236, 0.26);
-            border-radius: 10px;
-            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.6);
-            margin: 20px auto;
+        /* Header */
+        header {
+            background-color:rgb(2, 26, 2); /* Pasture green */
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            
         }
-        .notification {
-            margin: 10px 0;
-            padding: 10px;
+        header h1 {
+            margin: 0;
+            position:  absolute;
+           
+            font-size: 24px;
+            display: inline-block;
+        }
+        .home-link {
+            float: right;
+            color: #dcedc8; /* Light green */
+            text-decoration: none;
+            font-size: 16px;
+            padding: 5px 10px;
             border-radius: 5px;
-            background-color: #f8f9fa;
+        }
+        .home-link:hover {
+            background-color: #388e3c;
+        }
+        /* Floating Window (Noticeboard) */
+        .floating-window {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-image: url("https://6272027.fs1.hubspotusercontent-na1.net/hub/6272027/hubfs/Im%C3%A1genes/aumenta-la-rentabilidad.jpeg?width=1440&name=aumenta-la-rentabilidad.jpeg");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            border-radius: 10px;
+            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3);
+            position: relative;
+            border: 2px solid #8d6e63; /* Soil brown */
+        }
+
+        /* Overlay for readability */
+        .floating-window::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(100, 73, 13, 0.25); /* White overlay with 80% opacity */
+            border-radius: 10px;
+            z-index: 1;
+        }
+        .floating-window > * {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .floating-window h1 {
+            font-size: 28px;
+            color: #2e7d32;
+            margin: 0 0 20px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        /* Clear All Button */
+        .clear-all-btn {
+            background-color:rgb(15, 92, 95); /* Barn red */
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: block;
+            margin: 0 auto 20px;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        .clear-all-btn:hover {
+            background-color: #b71c1c;
+        }
+        /* Notification Cards */
+        .notification {
+            background-color: #fffde7; /* Cream for read notifications */
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            border-left: 4px solid #ccc; /* Default border */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        .notification.unread {
+            background-color: #e8f5e9; /* Light green for unread */
+            font-weight: bold;
+            transform: scale(1.02);
+        }
+        .notification.vet {
+            border-left-color: #0288d1; /* Blue for vet alerts */
+        }
+        .notification.animal {
+            border-left-color: #5d4037; /* Brown for animal updates */
+        }
+        .notification.platform {
+            border-left-color: #fbc02d; /* Yellow for platform news */
+        }
+        .notification-icon {
+            font-size: 20px;
+            margin-right: 10px;
+        }
+        .notification-content {
+            flex-grow: 1;
+        }
+        .notification-content p {
+            margin: 0;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        .notification-time {
+            color: #666;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        .mark-read-btn {
+            background: none;
+            border: 1px solid #2e7d32;
+            color: #2e7d32;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s;
+        }
+        .mark-read-btn:hover {
+            background-color: #2e7d32;
+            color: white;
+        }
+        /* No Notifications */
+        .no-notifications {
+            text-align: center;
+            color: #666;
+            font-size: 16px;
+            padding: 20px;
+        }
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .floating-window {
+                width: 90%;
+                margin: 10px auto;
+                padding: 15px;
+            }
+            .notification {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .mark-read-btn {
+                margin-top: 10px;
+            }
+            header h1 {
+                font-size: 20px;
+            }
+            .home-link {
+                font-size: 14px;
+            }
         }
     </style>
+</head>
+<body>
+    <header>
+        <h1>Notification  Display</h1>
+        <a href="{{ url_for('home_page') }}" class="home-link">Back to Home</a>
+    </header>
     <div class="floating-window">
-        <h1>Notifications</h1>
-        {% for notif in notifications %}
-            <div class="notification">
-                <p>{{ notif.content }} ({{ notif.created_at.strftime('%Y-%m-%d %H:%M') }})</p>
+        
+        {% if notifications %}
+            <form action="{{ url_for('clear_notifications') }}" method="POST">
+                <button type="submit" class="clear-all-btn">Clear All Notifications</button>
+            </form>
+        {% endif %}
+        {% for notification in notifications %}
+            <div class="notification {% if not notification.read %}unread{% endif %} {{ notification.category|default('') }}">
+                <span class="notification-icon">
+                    {% if notification.category == 'vet' %}🩺
+                    {% elif notification.category == 'animal' %}🐄
+                    {% elif notification.category == 'platform' %}📢
+                    {% else %}📩{% endif %}
+                </span>
+                <div class="notification-content">
+                    <p>{{ notification.content }}</p>
+                    <span class="notification-time">{{ notification.created_at.strftime('%b %d, %Y %I:%M %p') }}</span>
+                </div>
+                {% if not notification.read %}
+                    <form action="{{ url_for('mark_read', id=notification.id) }}" method="POST">
+                        <button type="submit" class="mark-read-btn">Mark as Read</button>
+                    </form>
+                {% endif %}
             </div>
         {% endfor %}
         {% if not notifications %}
-            <p>No new notifications.</p>
+            <p class="no-notifications">No notifications available.</p>
         {% endif %}
     </div>
-{% endblock %}
+
+
+    <script>
+        fetch('/notifications')
+        .then(response => response.json())
+        .then(data => {
+        // Update notification list
+        });
+    </script>
+
+</body>
+</html>
+
+
+
+
+
+
+
