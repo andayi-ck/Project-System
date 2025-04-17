@@ -817,15 +817,297 @@
         .ringing {
             animation: ring 0.5s ease-in-out infinite alternate;
         }
+
+        
         @keyframes ring {
             0% { transform: rotate(-15deg); }
             100% { transform: rotate(15deg); }
         }
 
+        .floating-windows-container {
+            position: relative;
+            width: 50%;
+            
+            left: -40px;
+            top: 60px;
+        }
+        
+        .floating-window {
+            width: 200px;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3);
+            position: absolute;
+            z-index: 10;
+        }
+        
+        .floating-window.tips-window {
+            top: 150px;
+            left: 50px;
+            background-image: url("https://images.unsplash.com/photo-1596854307943-279e1c90f0a4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080"); /* Lighter wood texture */
+            background-size: cover;
+            background-position: center;
+            border: 2px solid #1b5e20; /* Dark green */
+            height: 208px;
+        }
+        
+        .floating-window.tips-window::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.3); /* Light overlay for readability */
+            border-radius: 10px;
+            z-index: 1;
+        }
+        
+        .floating-window.tips-window h2 {
+            color: #fbc02d; /* Warm yellow */
+        }
+        
+        .floating-window.tips-window .tip-item {
+            background-color: #fff9c4; /* Pale yellow */
+            border-left: 4px solid #4caf50; /* Green border */
+        }
+        
+        .floating-window.general-info-window {
+            top: 368px; /* Below the tips window */
+            left: 50px; /* Same left position to stack vertically */
+            background-color: #f5f5dc; /* Hay-like beige (solid color) */
+            border: 2px solid #6d4c41; /* Rustic red-brown */
+            height: 230px;
+        }
+        
+        .floating-window.general-info-window::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.1); /* Subtle dark overlay */
+            border-radius: 10px;
+            z-index: 1;
+        }
+        
+        .floating-window.general-info-window h2 {
+            color: #4caf50; /* Soft green */
+        }
+        
+        .floating-window.general-info-window .info-item {
+            background-color: #fffde7; /* Cream */
+            border-left: 4px solid #8d6e63; /* Soil brown */
+        }
+        
+        .floating-window > * {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .floating-window h2 {
+            font-size: 24px;
+            margin: 0 0 15px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+        
+        .tip-item, .info-item {
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .tip-item h3, .info-item h3 {
+            margin: 0 0 10px;
+            font-size: 18px;
+            color: #333;
+        }
+        
+        .tip-item p, .info-item p {
+            margin: 0;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        
+        .tip-meta, .info-meta {
+            display: block;
+            color: #666;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        
+        .loading, .error, .no-info {
+            text-align: center;
+            color: #666;
+            font-size: 16px;
+            padding: 10px;
+        }
+        
+        .error {
+            color: #b71c1c; /* Barn red */
+        }
+        
+        @media (max-width: 768px) {
+            .floating-window {
+                width: 90%;
+                left: -20px; !important; /* Center on mobile */
+            }
+            .floating-window.tips-window {
+                top: 150px;
+            }
+            .floating-window.general-info-window {
+                top: 380px; /* Already stacked, keep same spacing */
+            }
+        }
 
 
 
     </style>
+    <script>
+        //JavaScript for Sidebar Toggle
+        function toggleSidebar() {
+            let sidebar = document.getElementById("sidebar");
+
+            // Toggle visibility and opacity
+            if (sidebar.classList.contains("active")) {
+                sidebar.classList.remove("active"); // Hide Sidebar
+            } else {
+                sidebar.classList.add("active"); // Show Sidebar
+            }
+        }
+
+
+        function validateEmail() {
+            let email = document.getElementById("emailInput").value;
+            let regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        
+            if (!regex.test(email)) {
+                alert("Please enter a valid email address.");
+                return false;
+            }
+            return true;
+        }
+
+
+        // dynamic badges updates
+        document.addEventListener('DOMContentLoaded', function() {
+            function updateNotificationBadge() {
+                const bell = document.querySelector('.notification-bell');
+                if (bell) {
+                    fetch('/notifications/count')
+                        .then(response => response.json())
+                        .then(data => {
+                            let badge = document.querySelector('.badge');
+                            if (data.unread_count > 0) {
+                                if (!badge) {
+                                    badge = document.createElement('span');
+                                    badge.className = 'badge';
+                                    bell.appendChild(badge);
+                                }
+                                badge.textContent = data.unread_count;
+                            } else if (badge) {
+                                badge.remove();
+                            }
+                        })
+                        .catch(error => console.error('Error fetching notification count:', error));
+                }
+            }
+        
+            updateNotificationBadge();
+            setInterval(updateNotificationBadge, 30000);
+        });
+
+
+        function fetchTips() {
+            fetch('/api/tips')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const container = document.getElementById('tips-container');
+                    if (!container) {
+                        console.error('Tips container not found');
+                        return;
+                    }
+                    container.innerHTML = '';
+                    if (data.length === 0) {
+                        container.innerHTML = '<p class="no-info">No tips available.</p>';
+                        return;
+                    }
+                    data.forEach(tip => {
+                        const tipElement = document.createElement('div');
+                        tipElement.className = 'tip-item';
+                        tipElement.innerHTML = `
+                            <h3>${tip.title}</h3>
+                            <p>${tip.content}</p>
+                            <span class="tip-meta">Posted by ${tip.author} on ${tip.posted_at}</span>
+                        `;
+                        container.appendChild(tipElement);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching tips:', error);
+                    const container = document.getElementById('tips-container');
+                    if (container) {
+                        container.innerHTML = '<p class="error">Failed to load tips. Please try again later.</p>';
+                    }
+                });
+        }
+
+        function fetchGeneralInfo() {
+            fetch('/api/general_info')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const container = document.getElementById('general-info-container');
+                    if (!container) {
+                        console.error('General info container not found');
+                        return;
+                    }
+                    container.innerHTML = '';
+                    if (data.length === 0) {
+                        container.innerHTML = '<p class="no-info">No general info available.</p>';
+                        return;
+                    }
+                    data.forEach(item => {
+                        const infoElement = document.createElement('div');
+                        infoElement.className = 'info-item';
+                        infoElement.innerHTML = `
+                            <h3>${item.title} (${item.category})</h3>
+                            <p>${item.content}</p>
+                            <span class="info-meta">Added on ${item.created_at}</span>
+                        `;
+                        container.appendChild(infoElement);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching general info:', error);
+                    const container = document.getElementById('general-info-container');
+                    if (container) {
+                        container.innerHTML = '<p class="error">Failed to load general info. Please try again later.</p>';
+                    }
+                });
+        }
+
+        window.onload = function() {
+            fetchTips();
+            fetchGeneralInfo();
+            setInterval(fetchTips, 60000); // Refresh every 60 seconds
+            setInterval(fetchGeneralInfo, 60000);
+        };
+
+
+    </script>
 
     <body>
 
@@ -1019,7 +1301,23 @@
             {% else %}
         
             {% endif %}
-    
+            <!-- Floating Windows -->
+            <div class="floating-windows-container">
+                <div class="floating-window tips-window">
+                    <h2>Livestock Tips</h2>
+                    <hr>
+                    <div id="tips-container">
+                        <p class="loading">Loading tips...</p>
+                    </div>
+                </div>
+                <div class="floating-window general-info-window">
+                    <h2>General Information</h2>
+                    <hr>
+                        <div id="general-info-container">
+                            <p class="loading">Loading general info...</p>
+                        </div>
+                </div>
+            </div>
 
 
             <img ="https://media.istockphoto.com/id/1016286868/photo/agritech-concept-with-dairy-cows-in-cowshed-with-data-display.jpg?s=612x612&w=0&k=20&c=p3l_87rSWfvD9kpw6XM3FoJG1bnYpYoJntFpmjZ5KP8="
