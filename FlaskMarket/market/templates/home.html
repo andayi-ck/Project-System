@@ -3,6 +3,9 @@
 
 
 
+
+
+
 {% extends 'base.html' %}
 {% block title %}
     LIVESTOCK MANAGEMENT SYSTEM
@@ -817,297 +820,177 @@
         .ringing {
             animation: ring 0.5s ease-in-out infinite alternate;
         }
-
-        
         @keyframes ring {
             0% { transform: rotate(-15deg); }
             100% { transform: rotate(15deg); }
         }
 
+
         .floating-windows-container {
-            position: relative;
-            width: 50%;
-            
-            left: -40px;
-            top: 60px;
+            width: 100%;
+            max-width: 600px;
+            margin: 20px auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
         
         .floating-window {
-            width: 200px;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3);
-            position: absolute;
-            z-index: 10;
+            width: 100%;
+            max-width: 300px;
+            padding: 12px;
+            border-radius: 6px;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+            background-color: #fff;
+            position: relative;
+            transition: opacity 0.3s ease;
         }
         
         .floating-window.tips-window {
-            top: 150px;
-            left: 50px;
-            background-image: url("https://images.unsplash.com/photo-1596854307943-279e1c90f0a4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080"); /* Lighter wood texture */
+            background-image: linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.8)), 
+                            url("https://images.unsplash.com/photo-1596854307943-279e1c90f0a4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080");
             background-size: cover;
             background-position: center;
-            border: 2px solid #1b5e20; /* Dark green */
-            height: 208px;
-        }
-        
-        .floating-window.tips-window::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(255, 255, 255, 0.3); /* Light overlay for readability */
-            border-radius: 10px;
-            z-index: 1;
-        }
-        
-        .floating-window.tips-window h2 {
-            color: #fbc02d; /* Warm yellow */
-        }
-        
-        .floating-window.tips-window .tip-item {
-            background-color: #fff9c4; /* Pale yellow */
-            border-left: 4px solid #4caf50; /* Green border */
+            border: 1px solid rgb(235, 248, 236);
         }
         
         .floating-window.general-info-window {
-            top: 368px; /* Below the tips window */
-            left: 50px; /* Same left position to stack vertically */
-            background-color: #f5f5dc; /* Hay-like beige (solid color) */
-            border: 2px solid #6d4c41; /* Rustic red-brown */
-            height: 230px;
-        }
-        
-        .floating-window.general-info-window::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.1); /* Subtle dark overlay */
-            border-radius: 10px;
-            z-index: 1;
-        }
-        
-        .floating-window.general-info-window h2 {
-            color: #4caf50; /* Soft green */
-        }
-        
-        .floating-window.general-info-window .info-item {
-            background-color: #fffde7; /* Cream */
-            border-left: 4px solid #8d6e63; /* Soil brown */
-        }
-        
-        .floating-window > * {
-            position: relative;
-            z-index: 2;
+            background-color: #f5f5dc;
+            border: 1px solid #8d6e63;
         }
         
         .floating-window h2 {
-            font-size: 24px;
-            margin: 0 0 15px;
+            font-size: 18px;
+            margin: 0 0 8px;
             text-align: center;
+            color: #4caf50;
             text-transform: uppercase;
         }
         
+        .floating-window hr {
+            border: 0;
+            height: 1px;
+            background: #ccc;
+            margin: 8px 0;
+        }
+        
+        #tips-container, #general-info-container {
+            max-height: 120px;
+            overflow-y: auto;
+            padding: 5px;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+        
+        #tips-container.fade, #general-info-container.fade {
+            opacity: 0;
+        }
+        
         .tip-item, .info-item {
-            margin: 10px 0;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background-color: rgba(255, 255, 255, 0.95);
+            border-left: 3px solid #4caf50;
+            border-radius: 4px;
+            padding: 8px;
+            margin: 5px 0;
+            font-size: 13px;
         }
         
         .tip-item h3, .info-item h3 {
-            margin: 0 0 10px;
-            font-size: 18px;
+            margin: 0 0 4px;
+            font-size: 15px;
             color: #333;
         }
         
         .tip-item p, .info-item p {
-            margin: 0;
-            font-size: 16px;
-            line-height: 1.5;
+            margin: 0 0 4px;
+            line-height: 1.3;
         }
         
         .tip-meta, .info-meta {
-            display: block;
             color: #666;
-            font-size: 12px;
-            margin-top: 5px;
+            font-size: 11px;
+            display: block;
         }
         
         .loading, .error, .no-info {
             text-align: center;
             color: #666;
-            font-size: 16px;
-            padding: 10px;
+            font-size: 13px;
+            padding: 8px;
         }
         
         .error {
-            color: #b71c1c; /* Barn red */
+            color: #b71c1c;
+        }
+        
+        .form-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 6px;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+        }
+        
+        .form-container h2 {
+            font-size: 20px;
+            color: #4caf50;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .form-container label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: bold;
+        }
+        
+        .form-container input[type="text"],
+        .form-container textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        
+        .form-container textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .form-container input[type="submit"] {
+            background-color: #4caf50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        .form-container input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+        
+        .form-container .error {
+            color: #b71c1c;
+            font-size: 12px;
         }
         
         @media (max-width: 768px) {
+            .floating-windows-container, .form-container {
+                padding: 0 8px;
+            }
             .floating-window {
-                width: 90%;
-                left: -20px; !important; /* Center on mobile */
-            }
-            .floating-window.tips-window {
-                top: 150px;
-            }
-            .floating-window.general-info-window {
-                top: 380px; /* Already stacked, keep same spacing */
+                max-width: 100%;
             }
         }
-
-
 
     </style>
-    <script>
-        //JavaScript for Sidebar Toggle
-        function toggleSidebar() {
-            let sidebar = document.getElementById("sidebar");
 
-            // Toggle visibility and opacity
-            if (sidebar.classList.contains("active")) {
-                sidebar.classList.remove("active"); // Hide Sidebar
-            } else {
-                sidebar.classList.add("active"); // Show Sidebar
-            }
-        }
-
-
-        function validateEmail() {
-            let email = document.getElementById("emailInput").value;
-            let regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        
-            if (!regex.test(email)) {
-                alert("Please enter a valid email address.");
-                return false;
-            }
-            return true;
-        }
-
-
-        // dynamic badges updates
-        document.addEventListener('DOMContentLoaded', function() {
-            function updateNotificationBadge() {
-                const bell = document.querySelector('.notification-bell');
-                if (bell) {
-                    fetch('/notifications/count')
-                        .then(response => response.json())
-                        .then(data => {
-                            let badge = document.querySelector('.badge');
-                            if (data.unread_count > 0) {
-                                if (!badge) {
-                                    badge = document.createElement('span');
-                                    badge.className = 'badge';
-                                    bell.appendChild(badge);
-                                }
-                                badge.textContent = data.unread_count;
-                            } else if (badge) {
-                                badge.remove();
-                            }
-                        })
-                        .catch(error => console.error('Error fetching notification count:', error));
-                }
-            }
-        
-            updateNotificationBadge();
-            setInterval(updateNotificationBadge, 30000);
-        });
-
-
-        function fetchTips() {
-            fetch('/api/tips')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    const container = document.getElementById('tips-container');
-                    if (!container) {
-                        console.error('Tips container not found');
-                        return;
-                    }
-                    container.innerHTML = '';
-                    if (data.length === 0) {
-                        container.innerHTML = '<p class="no-info">No tips available.</p>';
-                        return;
-                    }
-                    data.forEach(tip => {
-                        const tipElement = document.createElement('div');
-                        tipElement.className = 'tip-item';
-                        tipElement.innerHTML = `
-                            <h3>${tip.title}</h3>
-                            <p>${tip.content}</p>
-                            <span class="tip-meta">Posted by ${tip.author} on ${tip.posted_at}</span>
-                        `;
-                        container.appendChild(tipElement);
-                    });
-                })
-                .catch(error => {
-                    console.error('Error fetching tips:', error);
-                    const container = document.getElementById('tips-container');
-                    if (container) {
-                        container.innerHTML = '<p class="error">Failed to load tips. Please try again later.</p>';
-                    }
-                });
-        }
-
-        function fetchGeneralInfo() {
-            fetch('/api/general_info')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    const container = document.getElementById('general-info-container');
-                    if (!container) {
-                        console.error('General info container not found');
-                        return;
-                    }
-                    container.innerHTML = '';
-                    if (data.length === 0) {
-                        container.innerHTML = '<p class="no-info">No general info available.</p>';
-                        return;
-                    }
-                    data.forEach(item => {
-                        const infoElement = document.createElement('div');
-                        infoElement.className = 'info-item';
-                        infoElement.innerHTML = `
-                            <h3>${item.title} (${item.category})</h3>
-                            <p>${item.content}</p>
-                            <span class="info-meta">Added on ${item.created_at}</span>
-                        `;
-                        container.appendChild(infoElement);
-                    });
-                })
-                .catch(error => {
-                    console.error('Error fetching general info:', error);
-                    const container = document.getElementById('general-info-container');
-                    if (container) {
-                        container.innerHTML = '<p class="error">Failed to load general info. Please try again later.</p>';
-                    }
-                });
-        }
-
-        window.onload = function() {
-            fetchTips();
-            fetchGeneralInfo();
-            setInterval(fetchTips, 60000); // Refresh every 60 seconds
-            setInterval(fetchGeneralInfo, 60000);
-        };
-
-
-    </script>
+    
 
     <body>
 
@@ -1169,6 +1052,9 @@
 
 
             <hr class="custom-hr-hr">
+
+            <img src="https://media.istockphoto.com/id/1325962116/photo/the-concept-of-processing-the-cultivation-of-an-agricultural-field-with-automated-machinery.webp?a=1&b=1&s=612x612&w=0&k=20&c=HuGPWNyiK1Bn3gptQN1G0j2bGsVXlqHH9HaYLj6HRbE="
+                style="border: none; position: absolute; top: 200px; left: 870px; width: 280px; height: 148px; z-index: -1; border-radius: 10px; opacity: 0.50;">
 
             <p class="text-left" style="font-weight: bold; color: chocolate; font-size: 14px; left: 880px; top: 250px; position: absolute; font-family: 'Montserrat', sans-serif;">LAP-PLATFORM</p>
             <p class="text-left" style="font-weight: bold; color: chocolate; font-size: 38px; left: 880px; top: 260px; position: absolute; font-family: 'Nunito', sans-serif; font-size: 2.5rem;">DASHBOARD</p>
@@ -1258,7 +1144,7 @@
                         <div class="animal-info-7" style="background-color:rgb(245, 242, 188)">
                             <h3 style="color: black; font-family: 'Merriweather', sans-serif; font-size: 14px;">Discover Variety of animal Species and Breed of any Livestock</h3>
                             <p></p>
-                            <a href="{{ url_for('nearby_vets') }}" class="btn">Species & Variety</a>
+                            <a href="{{ url_for('tips') }}" class="btn">Species & Variety</a>
                         </div>
                 </div>
             </div>
@@ -1270,7 +1156,7 @@
                     <div class="animal-info-8" style="background: linear-gradient(140deg, rgba(3, 94, 139, .93), rgba(0, 203, 169, .73), rgba(0, 225, 80, .04)), linear-gradient(72deg, transparent, rgba(0, 225, 117, .64));">
                         <h3 style="color: black; font-family: 'Merriweather', sans-serif; font-size: 14px;">Track animal Health, Feed Intake, Habitat, Health and More.</h3>
                         <p></p>
-                        <a href="{{ url_for('notifications') }}" class="btn">Dashboard</a>
+                        <a href="{{ url_for('tips') }}" class="btn">Dashboard</a>
                     </div>
                 </div>
             </div>
@@ -1291,7 +1177,7 @@
 
             <!-- Bell Icon -->
             {% if current_user.is_authenticated %}
-            <a href="{{ url_for('notifications') }}" class="notification-bell {% if unread_count %}ringing{% endif %}">
+            <a style="text-decoration: none;" href="{{ url_for('notifications') }}" class="notification-bell {% if unread_count %}ringing{% endif %}">
                 🔔
                 {% if unread_count %}
                     <span class="badge">{{ unread_count }}</span>
@@ -1301,23 +1187,28 @@
             {% else %}
         
             {% endif %}
+
+
+
+
             <!-- Floating Windows -->
             <div class="floating-windows-container">
                 <div class="floating-window tips-window">
-                    <h2>Livestock Tips</h2>
+                    <h2>Livestock Tip</h2>
                     <hr>
                     <div id="tips-container">
-                        <p class="loading">Loading tips...</p>
+                        <p class="loading">Loading tip...</p>
                     </div>
                 </div>
                 <div class="floating-window general-info-window">
-                    <h2>General Information</h2>
+                    <h2>General Info</h2>
                     <hr>
-                        <div id="general-info-container">
-                            <p class="loading">Loading general info...</p>
-                        </div>
+                    <div id="general-info-container">
+                        <p class="loading">Loading info...</p>
+                    </div>
                 </div>
             </div>
+
 
 
             <img ="https://media.istockphoto.com/id/1016286868/photo/agritech-concept-with-dairy-cows-in-cowshed-with-data-display.jpg?s=612x612&w=0&k=20&c=p3l_87rSWfvD9kpw6XM3FoJG1bnYpYoJntFpmjZ5KP8="
@@ -1342,60 +1233,6 @@
 
 
 
-            <!-- JavaScript for Sidebar Toggle -->
-            <script>
-                function toggleSidebar() {
-                    let sidebar = document.getElementById("sidebar");
-        
-                    // Toggle visibility and opacity
-                    if (sidebar.classList.contains("active")) {
-                        sidebar.classList.remove("active"); // Hide Sidebar
-                    } else {
-                        sidebar.classList.add("active"); // Show Sidebar
-                    }
-                }
-
-
-                function validateEmail() {
-                    let email = document.getElementById("emailInput").value;
-                    let regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                
-                    if (!regex.test(email)) {
-                        alert("Please enter a valid email address.");
-                        return false;
-                    }
-                    return true;
-                }
-
-
-                // dynamic badges updates
-                document.addEventListener('DOMContentLoaded', function() {
-                    function updateNotificationBadge() {
-                        const bell = document.querySelector('.notification-bell');
-                        if (bell) {
-                            fetch('/notifications/count')
-                                .then(response => response.json())
-                                .then(data => {
-                                    let badge = document.querySelector('.badge');
-                                    if (data.unread_count > 0) {
-                                        if (!badge) {
-                                            badge = document.createElement('span');
-                                            badge.className = 'badge';
-                                            bell.appendChild(badge);
-                                        }
-                                        badge.textContent = data.unread_count;
-                                    } else if (badge) {
-                                        badge.remove();
-                                    }
-                                })
-                                .catch(error => console.error('Error fetching notification count:', error));
-                        }
-                    }
-                
-                    updateNotificationBadge();
-                    setInterval(updateNotificationBadge, 30000);
-                });
-            </script>
             
             
 
@@ -1403,7 +1240,7 @@
 
             <!--
             
-
+            <img src="https://images.unsplash.com/file-1719664968387-83d5a3f4d758image?w=416&dpr=2&auto=format&fit=crop&q=60">
             <img src="https://media.istockphoto.com/id/1345836558/photo/cow-with-rfid-chip-and-infographics.jpg?s=612x612&w=0&k=20&c=BThlqbT1eDuhk92MtFcJ9PLk6UOZmwL58jSFPM4WXL8=">
             <img src="https://media.istockphoto.com/id/1483439736/video/automated-egg-production.jpg?s=640x640&k=20&c=Ivx4cKfW_dOaj-vBiOonR11drSRKJidQwCEB4S5630Q=">
             <img src="https://media.istockphoto.com/id/1185486632/photo/vegetarian-and-cow.webp?a=1&b=1&s=612x612&w=0&k=20&c=uS5WTqWyOrIz9wwwQcFHDo1LiYpsAyzl38hZ9M6g7CI=">
@@ -1474,10 +1311,168 @@
             </div>
         </div>
     </div>
+
+
+
+
+    <script>
+        //JavaScript for Sidebar Toggle
+        function toggleSidebar() {
+            let sidebar = document.getElementById("sidebar");
+
+            // Toggle visibility and opacity
+            if (sidebar.classList.contains("active")) {
+                sidebar.classList.remove("active"); // Hide Sidebar
+            } else {
+                sidebar.classList.add("active"); // Show Sidebar
+            }
+        }
+
+
+        function validateEmail() {
+            let email = document.getElementById("emailInput").value;
+            let regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        
+            if (!regex.test(email)) {
+                alert("Please enter a valid email address.");
+                return false;
+            }
+            return true;
+        }
+
+
+        // dynamic badges updates
+        document.addEventListener('DOMContentLoaded', function() {
+            function updateNotificationBadge() {
+                const bell = document.querySelector('.notification-bell');
+                if (bell) {
+                    fetch('/notifications/count')
+                        .then(response => response.json())
+                        .then(data => {
+                            let badge = document.querySelector('.badge');
+                            if (data.unread_count > 0) {
+                                if (!badge) {
+                                    badge = document.createElement('span');
+                                    badge.className = 'badge';
+                                    bell.appendChild(badge);
+                                }
+                                badge.textContent = data.unread_count;
+                            } else if (badge) {
+                                badge.remove();
+                            }
+                        })
+                        .catch(error => console.error('Error fetching notification count:', error));
+                }
+            }
+        
+            updateNotificationBadge();
+            setInterval(updateNotificationBadge, 30000);
+        });
+
+
+        function fetchTips() {
+            const container = document.getElementById('tips-container');
+            if (!container) {
+                console.error('Tips container not found');
+                return;
+            }
+            container.classList.add('fade');
+            setTimeout(() => {
+                container.innerHTML = '<p class="loading">Loading tip...</p>';
+                fetch('/api/tips')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        container.innerHTML = '';
+                        if (data.error) {
+                            container.innerHTML = `<p class="error">${data.message}</p>`;
+                            return;
+                        }
+                        if (data.type !== 'tip') {
+                            console.warn('Unexpected item type in tips:', data);
+                            container.innerHTML = '<p class="error">Invalid tip data</p>';
+                            return;
+                        }
+                        const tipElement = document.createElement('div');
+                        tipElement.className = 'tip-item';
+                        tipElement.innerHTML = `
+                            <h3>${data.title}</h3>
+                            <p>${data.content}</p>
+                            <span class="tip-meta">Posted by ${data.author} on ${data.posted_at}</span>
+                        `;
+                        container.appendChild(tipElement);
+                        container.classList.remove('fade');
+                    })
+                    .catch(error => {
+                        console.error('Error fetching tip:', error);
+                        container.innerHTML = `<p class="error">Failed to load tip: ${error.message}</p>`;
+                        container.classList.remove('fade');
+                    });
+            }, 300);
+        }
+        
+        function fetchGeneralInfo() {
+            const container = document.getElementById('general-info-container');
+            if (!container) {
+                console.error('General info container not found');
+                return;
+            }
+            container.classList.add('fade');
+            setTimeout(() => {
+                container.innerHTML = '<p class="loading">Loading info...</p>';
+                fetch('/api/general_info')
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(err => {
+                                throw new Error(err.message || `HTTP error! Status: ${response.status}`);
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        container.innerHTML = '';
+                        if (data.error) {
+                            container.innerHTML = `<p class="error">${data.message || 'Unknown error'}</p>`;
+                            return;
+                        }
+                        if (data.type !== 'info') {
+                            console.warn('Unexpected item type in general info:', data);
+                            container.innerHTML = '<p class="error">Invalid info data</p>';
+                            return;
+                        }
+                        const infoElement = document.createElement('div');
+                        infoElement.className = 'info-item';
+                        infoElement.innerHTML = `
+                            <h3>${data.title} (${data.category})</h3>
+                            <p>${data.content}</p>
+                            <span class="info-meta">Added on ${data.created_at}</span>
+                        `;
+                        container.appendChild(infoElement);
+                        container.classList.remove('fade');
+                    })
+                    .catch(error => {
+                        console.error('Error fetching general info:', error);
+                        container.innerHTML = `<p class="error">Failed to load info: ${error.message}</p>`;
+                        container.classList.remove('fade');
+                    });
+            }, 300);
+        }
+        
+        window.onload = function() {
+            fetchTips();
+            fetchGeneralInfo();
+            setInterval(fetchTips, 20000);
+            setInterval(fetchGeneralInfo, 25000);
+        };
+
+    </script>
 </body>
 
 {% endblock %}
-
 
 
 
