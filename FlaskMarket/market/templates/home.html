@@ -6,6 +6,10 @@
 
 
 
+
+
+
+
 {% extends 'base.html' %}
 {% block title %}
     LIVESTOCK MANAGEMENT SYSTEM
@@ -55,8 +59,8 @@
         .custom-hr-hr {
             position: absolute; /* Adjust position if needed */
             top: 260px;         /* Distance from the top */
-            left: 260px;         /* Distance from the left */
-            width: 50%;         /* Length of the line */
+            left: 380px;         /* Distance from the left */
+            width: 40%;         /* Length of the line */
             height: 2px;        /* Thickness */
             background-color:rgb(202, 169, 60); /* Change to any color */
             border-radius: 10px; /* Makes the edges round */
@@ -91,9 +95,11 @@
             margin: 20px auto;
             transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
             cursor: pointer;
-            top: 330px;
-            left: 260px;
+            top: 328px;
+            left: 340px;
             position: absolute;
+
+            z-index: 20; /* Added to ensure card is above floating windows */
         }
 
         /* Hover Effect: Card lifts up with stronger shadow */
@@ -112,6 +118,8 @@
         .animal-info {
             padding: 15px;
             border-radius: 10px;
+
+            
         }
 
         /* Animal Name */
@@ -166,7 +174,7 @@
             transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
             cursor: pointer;
             top: 330px;
-            left: 456px;
+            left: 536px;
             position: absolute;
         }
 
@@ -240,7 +248,7 @@
             transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
             cursor: pointer;
             top: 330px;
-            left: 660px;
+            left: 726px;
             position: absolute;
         }
         .image-container {
@@ -323,7 +331,7 @@
             transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
             cursor: pointer;
             top: 330px;
-            left: 860px;
+            left: 920px;
             position: absolute;
         }
 
@@ -402,7 +410,7 @@
             transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
             cursor: pointer;
             top: 630px;
-            left: 860px;
+            left: 920px;
             position: absolute;
         }
 
@@ -477,7 +485,7 @@
             transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
             cursor: pointer;
             top: 630px;
-            left: 260px;
+            left: 340px;
             position: absolute;
         }
 
@@ -560,7 +568,7 @@
             transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
             cursor: pointer;
             top: 630px;
-            left: 460px;
+            left: 534px;
             position: absolute;
         }
 
@@ -633,7 +641,7 @@
             transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
             cursor: pointer;
             top: 630px;
-            left: 660px;
+            left: 724px;
             position: absolute;
         }
 
@@ -691,7 +699,7 @@
 
         .sidebar {
             width: 250px;
-            height: 76vh;
+            height: 44vh;
             background-color:rgb(248, 231, 215); /* Dark Blue */
             position: absolute;
             border-radius: 10px;
@@ -827,65 +835,139 @@
 
 
         .floating-windows-container {
-            width: 100%;
-            max-width: 600px;
+            width: 90%;
+            max-width: 550px;
             margin: 20px auto;
             display: flex;
             flex-direction: column;
             gap: 15px;
+            position: absolute;
+            top: 400px;
+            left: 10px;
+
+            z-index: 10; /* Added to set base stacking context, below animal-card */
+
         }
-        
+
         .floating-window {
             width: 100%;
             max-width: 300px;
             padding: 12px;
-            border-radius: 6px;
+            border-radius: 0px 20px 0px 20px; /* Curve top and bottom edges */
             box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
-            background-color: #fff;
             position: relative;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.8s ease, background-color 0.8s ease; /* Added opacity transition for fade effect */
+            opacity: 0; /* Initially invisible */
+            min-height: 150px; /* Added to ensure space is reserved when hidden */
+            
+            pointer-events: none; /* Added to allow clicks through when hidden */
+
+            /* Dynamic background color set via JavaScript with gradient overlay */
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.1));
         }
-        
+
         .floating-window.tips-window {
-            background-image: linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.8)), 
-                            url("https://images.unsplash.com/photo-1596854307943-279e1c90f0a4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080");
-            background-size: cover;
-            background-position: center;
+            border-radius: 10px 0px 0px 0px; /* Curved top/bottom */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25), 2px 2px 8px rgba(0, 0, 0, 0.15); /* Strong shadow */
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.1)); /* Gradient overlay */
+            
             border: 1px solid rgb(235, 248, 236);
+            /* Background color set dynamically via JavaScript */
         }
-        
+
+        .floating-window.visible {
+            opacity: 1; /* Visible state for fade-in */
+            visibility: visible; /* Added to ensure element remains in layout */
+
+            pointer-events: auto; /* Added to allow interaction when visible */
+        }
+
         .floating-window.general-info-window {
-            background-color: #f5f5dc;
-            border: 1px solid #8d6e63;
+            border-radius: 0px 0 0px 10px; /* Curved left edge */
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15), 1px 1px 4px rgba(0, 0, 0, 0.1); /* Softer shadow */
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.15), rgba(0, 0, 0, 0.15)); /* Vertical gradient */
+
+            border: 1px solidrgb(207, 198, 194);
+            /* Background color set dynamically via JavaScript */
         }
-        
-        .floating-window h2 {
-            font-size: 18px;
+
+        .floating-window.visible {
+            opacity: 1; /* Visible state for fade-in */
+        }
+
+
+
+        /* Folded corner for tips window (bottom-right) */
+        .floating-window.tips-window::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(45deg, rgba(0, 0, 0, 0.2), transparent);
+            border-bottom-right-radius: 20px;
+            box-shadow: -2px -2px 4px rgba(0, 0, 0, 0.15);
+            transform: rotate(-45deg);
+            transform-origin: bottom right;
+        }
+
+        /* Folded corner for general info window (top-left) */
+        .floating-window.general-info-window::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(225deg, rgba(0, 0, 0, 0.2), transparent);
+            border-top-left-radius: 20px;
+            box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.15);
+            transform: rotate(45deg);
+            transform-origin: top left;
+        }
+
+        .floating-window.tips-window h2 {
+            font-size: 20px;
+            font-weight: bold;
+            font-style: italic;
+            color: #4caf50; /* Green */
+            text-decoration: underline;
+            text-transform: uppercase;
             margin: 0 0 8px;
             text-align: center;
-            color: #4caf50;
+        }
+
+        .floating-window.general-info-window h2 {
+            font-size: 20px;
+            font-style: italic;
+            color: #2196f3; /* Blue */
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
             text-transform: uppercase;
+            margin: 0 0 8px;
+            text-align: center;
         }
         
+
         .floating-window hr {
             border: 0;
             height: 1px;
             background: #ccc;
             margin: 8px 0;
         }
-        
+
         #tips-container, #general-info-container {
             max-height: 120px;
             overflow-y: auto;
             padding: 5px;
             opacity: 1;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.8s ease;
         }
-        
+
         #tips-container.fade, #general-info-container.fade {
             opacity: 0;
         }
-        
+
         .tip-item, .info-item {
             background-color: rgba(255, 255, 255, 0.95);
             border-left: 3px solid #4caf50;
@@ -894,34 +976,37 @@
             margin: 5px 0;
             font-size: 13px;
         }
-        
+
         .tip-item h3, .info-item h3 {
             margin: 0 0 4px;
             font-size: 15px;
             color: #333;
         }
-        
+
         .tip-item p, .info-item p {
             margin: 0 0 4px;
             line-height: 1.3;
         }
-        
+
         .tip-meta, .info-meta {
             color: #666;
             font-size: 11px;
             display: block;
         }
-        
+
         .loading, .error, .no-info {
             text-align: center;
             color: #666;
             font-size: 13px;
             padding: 8px;
         }
-        
+
         .error {
             color: #b71c1c;
         }
+
+
+        
         
         .form-container {
             width: 100%;
@@ -984,7 +1069,9 @@
                 padding: 0 8px;
             }
             .floating-window {
-                max-width: 100%;
+                max-width: 40%;
+                position: absolute;
+                top: 300px;
             }
         }
 
@@ -1060,15 +1147,16 @@
             <p class="text-left" style="font-weight: bold; color: chocolate; font-size: 38px; left: 880px; top: 260px; position: absolute; font-family: 'Nunito', sans-serif; font-size: 2.5rem;">DASHBOARD</p>
 
         
-            
-            <!-- Animal Card -->
-            <div class="animal-card">
-                <img src="https://media.istockphoto.com/id/1034895924/photo/group-of-farm-animals.webp?a=1&b=1&s=612x612&w=0&k=20&c=0NcK9I48g5Uan3BtKjJsMKEhuAagd98kVl1xhFO53ZI=" alt="Farm Animals">
-                    <div class="animal-info" style="background-color: #FF6600">
-                        <h3 style="color: black; font-family: 'Merriweather', sans-serif; font-size: 14px;">Dedicated to suit all your needs for all Livestock</h3>
-                        <p></p>
-                        <a href="{{ url_for('home2_page') }}" class="btn">Learn More</a>
-                    </div>
+            <div class="card-container">
+                <!-- Animal Card -->
+                <div class="animal-card">
+                    <img src="https://media.istockphoto.com/id/1034895924/photo/group-of-farm-animals.webp?a=1&b=1&s=612x612&w=0&k=20&c=0NcK9I48g5Uan3BtKjJsMKEhuAagd98kVl1xhFO53ZI=" alt="Farm Animals">
+                        <div class="animal-info" style="background-color: #FF6600">
+                            <h3 style="color: black; font-family: 'Merriweather', sans-serif; font-size: 14px;">Dedicated to suit all your needs for all Livestock</h3>
+                            <p></p>
+                            <a href="{{ url_for('home2_page') }}" class="btn">Learn More</a>
+                        </div>
+                </div>
             </div>
 
             <div class="card-container">
@@ -1164,16 +1252,15 @@
             
 
         
-            
-            <img class="menu-icon" onclick="toggleSidebar()" onmouseover="showTooltip()" onmouseout="hideTooltip()" src="https://cdn-icons-png.flaticon.com/128/3917/3917482.png" style="width: 30px; height: 30px;">
+            <a href="{{ url_for('livestock_dashboard') }}">
+                <img class="menu-icon" onclick="toggleSidebar()" onmouseover="showTooltip()" onmouseout="hideTooltip()" src="https://cdn-icons-png.flaticon.com/128/3917/3917482.png" style="width: 30px; height: 30px;">
+            </a>
             <a href="{{ url_for('tips') }}">
                 <img src="https://cdn-icons-png.flaticon.com/128/3914/3914501.png" style="width: 30px; height: 30px; position: absolute; top: 240px; left: 20px;">
             </a>
             <a href="{{ url_for('register_page') }}">
                 <img src="https://cdn-icons-png.flaticon.com/128/3917/3917546.png" style="width: 30px; height: 30px; position: absolute; top: 300px; left: 20px;">
             </a>
-
-    
 
             <!-- Bell Icon -->
             {% if current_user.is_authenticated %}
@@ -1189,18 +1276,16 @@
             {% endif %}
 
 
-
-
             <!-- Floating Windows -->
             <div class="floating-windows-container">
-                <div class="floating-window tips-window">
+                <div class="floating-window tips-window" id="tipWindow">
                     <h2>Livestock Tip</h2>
                     <hr>
                     <div id="tips-container">
                         <p class="loading">Loading tip...</p>
                     </div>
                 </div>
-                <div class="floating-window general-info-window">
+                <div class="floating-window general-info-window" id="generalTipWindow">
                     <h2>General Info</h2>
                     <hr>
                     <div id="general-info-container">
@@ -1209,12 +1294,16 @@
                 </div>
             </div>
 
+            
+
 
 
             <img ="https://media.istockphoto.com/id/1016286868/photo/agritech-concept-with-dairy-cows-in-cowshed-with-data-display.jpg?s=612x612&w=0&k=20&c=p3l_87rSWfvD9kpw6XM3FoJG1bnYpYoJntFpmjZ5KP8="
                 style="position: absolute; top: 200px; left: 870px; width: 280px; height: 150px; z-index: -12; border-radius: 10px; opacity: 0.70;">
             
-            <!-- Sidebar Navigation -->
+            
+        
+            <!--Sidebar Navigation
             <div class="sidebar" id="sidebar">
             <h2 style="color: chocolate; font-size: 1.8rem; top: 10px; font: bold; left: 60px; position: absolute;">LAP PLATFORM</h2>
                 <hr>
@@ -1224,7 +1313,7 @@
                 <a href="\bottom" style="position: absolute; top: 200px; left: 40px;"><img src="https://cdn-icons-png.flaticon.com/128/3917/3917051.png" style="width: 22px; height: 22px; position: absolute; top: 8px; left: -20px;">Settings</a>
                 <a href="{{ url_for('register_page') }}" style="position: absolute; top: 240px; left: 40px;"><img src="https://cdn-icons-png.flaticon.com/128/3917/3917546.png" style="width: 22px; height: 22px; position: absolute; top: 8px; left: -20px;">Log-in/Register</a>
             </div>
-
+            -->
             
             <img src="https://media.istockphoto.com/id/1016287040/photo/smartphone-app-reading-dairy-cows-data-tag-agritech-concept.jpg?s=612x612&w=0&k=20&c=PRjF0X7J44JiQfVfsgWKtG8XaHyYX0lSSUc2cDihhvo="
             style="border: none; position: absolute; top: 848px; left: 0px; width: 246px; height: 152px; z-index: -1; border-radius: 10px; opacity: 0.80;">
@@ -1369,14 +1458,37 @@
             setInterval(updateNotificationBadge, 30000);
         });
 
+        // Color array for floating window background (5 distinct colors)
+        const colors = [
+            "rgba(255, 255, 255, 0.77)", // Blue
+            "rgba(227, 241, 253, 0.9)", // Red
+            "rgb(245, 245, 178)", // Green
+            "rgb(183, 209, 183)", // Yellow
+            "rgba(247, 247, 247, 0.92)"  // Purple
+        ];
 
+        // State for tips window
+        let tipColorIndex = 0;
+
+        // State for general tips window
+        let generalTipColorIndex = 0;
+
+        // Function to fetch and display a new tip
         function fetchTips() {
             const container = document.getElementById('tips-container');
-            if (!container) {
-                console.error('Tips container not found');
+            const tipWindow = document.getElementById('tipWindow');
+            if (!container || !tipWindow) {
+                console.error('Tips container or window not found');
                 return;
             }
+
+            // Apply fade effect for content
             container.classList.add('fade');
+
+            // Update background color of the floating window
+            tipWindow.style.backgroundColor = colors[tipColorIndex];
+            tipColorIndex = (tipColorIndex + 1) % colors.length;
+
             setTimeout(() => {
                 container.innerHTML = '<p class="loading">Loading tip...</p>';
                 fetch('/api/tips')
@@ -1414,14 +1526,26 @@
                     });
             }, 300);
         }
+
+
         
+
+        // Function to fetch and display a new general info item
         function fetchGeneralInfo() {
             const container = document.getElementById('general-info-container');
-            if (!container) {
-                console.error('General info container not found');
+            const generalTipWindow = document.getElementById('generalTipWindow');
+            if (!container || !generalTipWindow) {
+                console.error('General info container or window not found');
                 return;
             }
+
+            // Apply fade effect for content
             container.classList.add('fade');
+
+            // Update background color of the floating window
+            generalTipWindow.style.backgroundColor = colors[generalTipColorIndex];
+            generalTipColorIndex = (generalTipColorIndex + 1) % colors.length;
+
             setTimeout(() => {
                 container.innerHTML = '<p class="loading">Loading info...</p>';
                 fetch('/api/general_info')
@@ -1441,7 +1565,7 @@
                         }
                         if (data.type !== 'info') {
                             console.warn('Unexpected item type in general info:', data);
-                            container.innerHTML = '<p class="error">Invalid info data</p>';
+                            container.innerHTML = `<p class="error">Invalid info data</p>`;
                             return;
                         }
                         const infoElement = document.createElement('div');
@@ -1461,13 +1585,35 @@
                     });
             }, 300);
         }
-        
-        window.onload = function() {
+
+        // Function to manage tips window cycle (60s display + 10s hide)
+        function manageTipsCycle() {
+            const tipWindow = document.getElementById('tipWindow');
             fetchTips();
+            tipWindow.classList.add('visible'); // Fade in
+            setTimeout(() => {
+                tipWindow.classList.remove('visible'); // Fade out after 60 seconds
+            }, 60000);
+        }
+
+        // Function to manage general tips window cycle (80s display + 10s hide)
+        function manageGeneralTipsCycle() {
+            const generalTipWindow = document.getElementById('generalTipWindow');
             fetchGeneralInfo();
-            setInterval(fetchTips, 20000);
-            setInterval(fetchGeneralInfo, 25000);
+            generalTipWindow.classList.add('visible'); // Fade in
+            setTimeout(() => {
+                generalTipWindow.classList.remove('visible'); // Fade out after 80 seconds
+            }, 80000);
+        }
+
+        // Initialize cycles
+        window.onload = function() {
+            manageTipsCycle();
+            manageGeneralTipsCycle();
+            setInterval(manageTipsCycle, 70000); // 60s display + 10s hide
+            setInterval(manageGeneralTipsCycle, 90000); // 80s display + 10s hide
         };
+
 
     </script>
 </body>
