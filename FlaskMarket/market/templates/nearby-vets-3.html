@@ -310,6 +310,39 @@
         background-color: #f39c12; /* Orange to indicate current page */
         transform: scale(1.2); /* Slightly larger for emphasis */
     }
+
+    .pagination a:last-child {
+        width: 110px;
+        font-size: 18px;
+        height: 60px;
+        padding: 10px;
+        top: -1140px;
+        left: 420px;
+        background: linear-gradient(to bottom,rgb(214, 89, 50), #D45D2C);
+        font-family: 'Roboto', 'Arial', sans-serif;
+        color:rgba(255, 255, 255, 0.93);
+        font-size: 18px;
+        border-radius: 15px;
+        text-align: center;
+        transition: transform 0.3s ease, width 0.3s ease, height 0.3s ease, background-color 0.3s ease;
+        box-shadow: 5px 5px 15px rgba(241, 234, 234, 0.3);
+        cursor: pointer;
+        white-space: nowrap; /* Prevent text wrapping */
+        position: absolute;
+
+    }
+
+    /* Remove the tooltip for the last anchor tag */
+    .pagination a:last-child::after {
+        content: none; /* Disable the tooltip content */
+    }
+
+    .pagination a:last-child:hover::after {
+        opacity: 0; /* Ensure the tooltip stays hidden on hover */
+        visibility: hidden;
+    }
+    
+
     
 
 </style>
@@ -473,12 +506,15 @@
         <p style="position: absolute; bottom: -40px;">Browse the official <a href="https://www.kenyavetboard.or.ke/" target="_blank">Kenya Veterinary Board (KVB)</a> directory for certified vets.</p><br>
         <p style="position: absolute; bottom: -70px;">Or check out the <a href="https://www.kenyavets.org/" target="_blank">Kenya Veterinary Association (KVA)</a> for vet events and services.</p>
 
-
         <div class="pagination">
             <a href="{{ url_for('nearby_vets') }}" data-tooltip="Previous Page"><span>1</span></a>
             <a href="{{ url_for('nearby_vets_2') }}" data-tooltip="Previous Page"><span>2</span></a>
             <a href="{{ url_for('nearby_vets_3') }}" data-tooltip="Current Page" class="active"><span>3</span></a>
+            <a href="{{ url_for('add_vet') }}" data-tooltip="Next Page">Add Vet</a>
         </div>
+        
+
+        
     </div>
 
 </div>
