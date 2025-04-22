@@ -21,7 +21,7 @@ from flask import (flash, get_flashed_messages, jsonify, redirect, render_templa
 from flask_login import LoginManager, UserMixin, current_user, login_required, login_user, logout_user
 from market import app, bcrypt, db, login_manager
 from market.forms import LoginForm, PurchaseItemForm, RegisterForm
-from market.models import Illness, Item, User, Veterinary, Campaign, Notification, Tip, Message
+from market.models import Illness, Item, User, Veterinary, Campaign, Notification, Tip, Message, SymptomCheckerModal
 
 
 @app.route('/')
@@ -647,3 +647,205 @@ def symptom_checker():
 def connect_farmers():
     farmers = Farmer.query.all()
     return render_template('connect-farmers.html', farmers=farmers)
+
+
+@app.route('/book_appointment', methods=['POST'])
+@login_required
+def book_appointment():
+    try:
+        data = request.get_json()
+        vet_id = data.get('vetId')
+        vet_name = data.get('vetName')
+        appointment_date = data.get('appointmentDate')
+        appointment_time = data.get('appointmentTime')
+        animal_type = data.get('animalType')
+        owner_name = data.get('ownerName')
+        owner_email = data.get('ownerEmail')
+
+        # Validate required fields
+        if not all([vet_id, vet_name, appointment_date, appointment_time, animal_type, owner_name, owner_email]):
+            return jsonify({'error': 'Missing required fields'}), 400
+
+        # Save the appointment
+        appointment = Appointment(
+            vet_id=int(vet_id),
+            vet_name=vet_name,
+            appointment_date=appointment_date,
+            appointment_time=appointment_time,
+            animal_type=animal_type,
+            owner_name=owner_name,
+            owner_email=owner_email,
+            user_id=current_user.id
+        )
+        db.session.add(appointment)
+
+        # Create a notification for the user
+        notification = Notification(
+            content=f"Appointment booked with {vet_name} on {appointment_date} at {appointment_time} for your {animal_type}",
+            category='appointment',
+            user_id=current_user.id
+        )
+        db.session.add(notification)
+        db.session.commit()
+
+        # Send confirmation email
+        send_appointment_email(owner_email, vet_name, appointment_date, appointment_time, animal_type, owner_name)
+
+        return jsonify({'message': 'Appointment booked successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Error booking appointment: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+
+    
+    
+@app.route('/add_vet', methods=['GET', 'POST'])
+@login_required
+def add_vet():
+    if current_user.role != 'vet':
+        flash('Only vets can add profiles.', 'error')
+        return redirect(url_for('home_page'))
+    
+    form = VetForm()
+    if form.validate_on_submit():
+        # Generate a unique vet_id (e.g., user_id + random suffix if needed)
+        vet_id = f"vet_{current_user.id}_{uuid4().hex[:8]}"
+        while Vet.query.filter_by(vet_id=vet_id).first():
+            vet_id = f"vet_{current_user.id}_{uuid4().hex[:8]}"  # Ensure uniqueness
+
+        vet = Vet(
+            vet_id=vet_id,  # Updated to use vet_id
+            name=form.name.data,
+            specialty=form.specialty.data,
+            clinic=form.clinic.data,
+            experience=int(form.experience.data),
+            availability=form.availability.data,
+            accepting=form.accepting.data,
+            rating='0 (0 reviews)',  # Default rating
+            price=0,  # Default price (can be updated later)
+            image_url=form.image_url.data or "https://via.placeholder.com/300x150"
+        )
+        db.session.add(vet)
+        db.session.commit()
+
+        # Notify the vet
+        vet_notification = Notification(
+            content=f"Vet profile added: {vet.name}",
+            category='vet_added',
+            user_id=current_user.id
+        )
+        db.session.add(vet_notification)
+
+        # Notify other users
+        other_users = User.query.filter(User.id != current_user.id).all()
+        for user in other_users:
+            user_notification = Notification(
+                content=f"New vet added: {vet.name}",
+                category='new_vet',
+                user_id=user.id
+            )
+            db.session.add(user_notification)
+            send_new_vet_notification_email(user.email, vet.name, user.username)
+
+        db.session.commit()
+
+        # Send confirmation email to the vet
+        send_vet_confirmation_email(form.email.data, vet.name)
+
+        flash('Vet profile added successfully!', 'success')
+        return redirect(url_for('home_page'))
+    
+    return render_template('add_vet.html', form=form)
+
+
+
+# Define synonyms for animal types
+ANIMAL_SYNONYMS = {
+    'cow': ['cow', 'cattle', 'calf', 'bovine'],
+    'cattle': ['cow', 'cattle', 'calf', 'bovine'],
+    'calf': ['cow', 'cattle', 'calf', 'bovine'],
+    'bovine': ['cow', 'cattle', 'calf', 'bovine'],
+    'goat': ['goat', 'kid'],
+    'sheep': ['sheep', 'lamb', 'ewe'],
+    'pig': ['pig', 'swine', 'hog', 'boar', 'sow'],
+    'swine': ['pig', 'swine', 'hog', 'boar', 'sow'],
+    'chicken': ['chicken', 'poultry', 'hen', 'rooster'],
+    'poultry': ['chicken', 'poultry', 'hen', 'rooster'],
+    'horse': ['horse', 'mare', 'stallion', 'foal'],
+    'donkey': ['donkey', 'ass', 'mule'],
+    'cat': ['cat', 'kitten', 'feline'],
+    'dog': ['dog', 'puppy', 'canine'],
+    'rabbit': ['rabbit', 'bunny'],
+    'camel': ['camel', 'dromedary', 'bactrian']
+}
+
+@app.route('/search_symptoms', methods=['POST'])
+def search_symptoms():
+    try:
+        data = request.get_json()
+        animal_name = data.get('animal_name', '').strip().lower()
+        raw_symptoms = data.get('symptoms', '').strip().lower().split(',')[:7]
+        symptoms = []
+        for symptom in raw_symptoms:
+            sub_symptoms = [s.strip() for s in symptom.replace(' and ', ',').split(',')]
+            symptoms.extend(sub_symptoms)
+        symptoms = [s for s in symptoms if s]
+        if not animal_name or not symptoms:
+            return jsonify({'error': 'Please provide both animal name and symptoms.'}), 400
+        
+        print(f"Input - Animal: {animal_name}, Symptoms: {symptoms}")
+
+        # Get possible synonyms for the animal name
+        animal_synonyms = []
+        for key, synonyms in ANIMAL_SYNONYMS.items():
+            if animal_name in synonyms:
+                animal_synonyms.extend(synonyms)
+                break
+        if not animal_synonyms:
+            animal_synonyms = [animal_name]
+        print(f"Animal synonyms: {animal_synonyms}")
+
+        diseases = SymptomCheckerDisease.query.all()
+        print(f"Total diseases queried: {len(diseases)}")
+
+        matching_diseases = []
+        for disease in diseases:
+            print(f"Checking disease: {disease.name}, Animal Type: {disease.animal_type}, Symptoms: {disease.symptoms}")
+            # Check if any synonym matches the animal type
+            animal_type_lower = disease.animal_type.lower()
+            if any(synonym in animal_type_lower for synonym in animal_synonyms):
+                print(f"Animal match: {animal_name} (via {animal_synonyms}) found in {animal_type_lower}")
+                
+                disease_symptoms = [s.strip() for s in disease.symptoms.lower().split(',')]
+                matching_symptom_count = 0
+                matched_symptoms = set()
+                for input_symptom in symptoms:
+                    for db_symptom in disease_symptoms:
+                        if input_symptom in db_symptom or db_symptom in input_symptom:
+                            matching_symptom_count += 1
+                            matched_symptoms.add(input_symptom)
+                            print(f"Symptom match: {input_symptom} matches {db_symptom}")
+                            break
+                
+                if matching_symptom_count > 0:
+                    matching_diseases.append({
+                        'name': disease.name,
+                        'animal_type': disease.animal_type,
+                        'matching_symptoms': matching_symptom_count
+                    })
+        
+        print(f"Matching diseases: {matching_diseases}")
+
+        matching_diseases.sort(key=lambda x: x['matching_symptoms'], reverse=True)
+        matching_diseases = matching_diseases[:3]
+        if not matching_diseases:
+            return jsonify({'error': 'No matching diseases found for the given symptoms.'}), 404
+        return jsonify({'diseases': matching_diseases})
+    except Exception as e:
+        print(f"Exception occurred: {str(e)}")
+        return jsonify({'error': f'Server error: {str(e)}'}), 500
+
+
+
+
