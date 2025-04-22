@@ -516,6 +516,129 @@
         opacity: 0; /* Ensure the tooltip stays hidden on hover */
         visibility: hidden;
     }
+
+    .custom-hr-2{
+        position: absolute; /* Adjust position if needed */
+        top: -22px;         /* Distance from the top */
+        left: -260px;         /* Distance from the left */
+        width: 18%;         /* Length of the line */
+        height: 1px;        /* Thickness */
+        background-color:rgba(73, 72, 68, 0.4); /* Change to any color */
+        border-radius: 10px; /* Makes the edges round */
+        border: none; /* Remove default border */
+    }
+    .vertical-line-2 {
+        width: 100px;   /* Thickness of the vertical line */
+        height: 680px; /* Set the height of the vertical line */
+        background-color: rgb(73, 72, 68, 0.4));
+        position: absolute;
+        top: -18px;   /* Aligns it to the end of the horizontal line */
+        left: -260px; /* Moves it to the exact end of the horizontal line */
+        border-radius: 10px;
+    }
+
+    /* CHANGE MADE: Added styles for the Symptom Checker modal */
+    .symptom-checker-modal {
+        display: none;
+        position: absolute;
+        top: 100px;
+        
+        left: 80px; /* Positioned just beside the Symptom Checker link */
+        width: 300px;
+        background:rgba(239, 244, 248, 0.97);
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        padding: 20px;
+        z-index: 10;
+    }
+
+    .symptom-checker-modal h3 {
+        margin-top: 0;
+        color: #2e7d32;
+        font-family: 'Nunito', sans-serif;
+        font-size: 18px;
+    }
+
+    .symptom-checker-modal .close-btn {
+        position: absolute;
+        top: 10px;
+        border: 4px;
+        right: 10px;
+        font-size: 20px;
+        cursor: pointer;
+        color: #333;
+    }
+
+    .symptom-checker-modal input,
+    .symptom-checker-modal textarea {
+        width: 100%;
+        padding: 8px;
+        margin: 10px 0;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 14px;
+        box-sizing: border-box;
+    }
+
+    .symptom-checker-modal textarea {
+        height: 80px;
+        resize: none;
+    }
+
+    .symptom-checker-modal button {
+        width: 100%;
+        padding: 10px;
+        background: #3498db;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-family: 'Nunito', sans-serif;
+        font-size: 14px;
+        transition: background-color 0.3s;
+    }
+
+    .symptom-checker-modal button:hover {
+        background: #2980b9;
+    }
+
+    .symptom-checker-modal .results {
+        margin-top: 15px;
+        padding: 10px;
+        background: #f9f9f9;
+        border-radius: 4px;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 14px;
+        color: #333;
+    }
+
+    .symptom-checker-modal .results ul {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    .symptom-checker-modal .results li {
+        margin-bottom: 5px;
+    }
+
+    .symptom-checker-modal .error {
+        color: #d32f2f;
+        font-size: 14px;
+        text-align: center;
+    }
+    
+    /* --- CHANGE APPLIED: Renamed .modal-backdrop to .symptom-checker-overlay --- */
+    .symptom-checker-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(214, 209, 209, 0.44);
+        z-index: 9;
+    }
     
 
 
@@ -543,14 +666,17 @@
         <div class="small-box" style="width: 100px; height: 40px; position: absolute; top: -30px; left: -40px;">Home</div>
     </a>
     
-    <a href="{{ url_for('nearby_vets') }}">
-        <div class="small-box" style="width: 100px; height: 60px; position: absolute; top: 40px; left: -40px;">Symptom Checker</div>
-    </a>
+    
     
     <a href="{{ url_for('nearby_vets') }}">
         <div class="small-box" style="width: 100px; height: 80px; position: absolute; top: 120px; left: -40px;">Search for Vet</div
     </a>
 
+    <!-- CHANGE MADE: Modified the Symptom Checker link to open a modal instead of navigating -->
+    <a href="#" onclick="openSymptomChecker(event)">
+        <div class="small-box" style="width: 100px; height: 60px; position: absolute; top: 40px; left: -40px;">Symptom Checker</div>
+    </a>
+    <!-- END CHANGE -->
 
     <a href="{{ url_for('connect_farmers') }}">
         <div class="small-box" style="width: 110px; height: 80px; position: absolute; top: 200px; left: -40px;">Farmers Community</div>
@@ -722,6 +848,18 @@
             <a href="{{ url_for('add_vet') }}" data-tooltip="Go to Next Page">Add Vet</a>
         </div>
     </div>
+
+   <!-- CHANGE MADE: Added Symptom Checker Modal to support symptom search and illness suggestion -->
+    <div id="symptomCheckerModal" class="symptom-checker-modal">
+        <span class="close-btn" onclick="closeSymptomChecker()">×</span>
+        <h3>Symptom Checker</h3>
+        <input type="text" id="animalName" placeholder="Enter animal name (e.g., Cattle, Poultry)">
+        <textarea id="symptoms" placeholder="Enter symptoms (comma-separated, up to 7, e.g., fever, cough, lameness)"></textarea>
+        <button onclick="searchSymptoms()">Search</button>
+    <div id="symptomResults" class="results"></div>
+        
+    <!-- END CHANGE --> 
+    
 </div>
 
 
@@ -950,6 +1088,76 @@
             currentPage += offset;
             fetchSearchResults();
         }
+
+
+    // Symptom Checker Functions
+    function openSymptomChecker(event) {
+        event.preventDefault();
+        const modal = document.getElementById('symptomCheckerModal');
+        const overlay = document.getElementById('symptomCheckerOverlay');
+        modal.style.display = 'block';
+        overlay.style.display = 'block';
+        document.getElementById('symptomResults').innerHTML = '';
+    }
+    function closeSymptomChecker() {
+        const modal = document.getElementById('symptomCheckerModal');
+        const overlay = document.getElementById('symptomCheckerOverlay');
+        modal.style.display = 'none';
+        overlay.style.display = 'none';
+        document.getElementById('animalName').value = '';
+        document.getElementById('symptoms').value = '';
+        document.getElementById('symptomResults').innerHTML = '';
+    }
+    
+    // --- CHANGE APPLIED: Improve error handling in searchSymptoms ---
+    function searchSymptoms() {
+        const animalName = document.getElementById('animalName').value;
+        const symptoms = document.getElementById('symptoms').value;
+        const resultsDiv = document.getElementById('symptomResults');
+
+        fetch('/search_symptoms', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                animal_name: animalName,
+                symptoms: symptoms
+            })
+        })
+        .then(response => {
+            // Log the response status and headers for debugging
+            console.log('Response Status:', response.status);
+            console.log('Response Headers:', response.headers);
+
+            // Check if the response is OK (status 200-299)
+            if (!response.ok) {
+                return response.text().then(text => {
+                    throw new Error(`Server returned ${response.status}: ${text}`);
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            resultsDiv.innerHTML = '';
+            if (data.error) {
+                resultsDiv.innerHTML = `<p class="error">${data.error}</p>`;
+            } else {
+                const ul = document.createElement('ul');
+                data.diseases.forEach(disease => {
+                    const li = document.createElement('li');
+                    li.textContent = `${disease.name} (${disease.animal_type}) - ${disease.matching_symptoms} matching symptom(s)`;
+                    ul.appendChild(li);
+                });
+                resultsDiv.appendChild(ul);
+            }
+        })
+        .catch(error => {
+            console.error('Fetch Error:', error);
+            resultsDiv.innerHTML = `<p class="error">Error searching symptoms: ${error.message}</p>`;
+        });
+    }
+    // --- END CHANGE ---
 
 
 </script>
