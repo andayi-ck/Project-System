@@ -180,3 +180,14 @@ class Tip(db.Model):
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     posted_at = db.Column(db.DateTime, default=datetime.utcnow)
     author = db.relationship('User', backref='tips')
+
+
+
+class SymptomCheckerDisease(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)  # Disease name (e.g., "Foot-and-Mouth Disease")
+    animal_type = db.Column(db.String(50), nullable=False)  # Animal type (e.g., "Cattle", "Poultry")
+    symptoms = db.Column(db.String(500), nullable=False)  # Symptoms as a comma-separated string (e.g., "fever,blisters on mouth,lameness")
+
+    def __repr__(self):
+        return f'<SymptomCheckerDisease {self.name} for {self.animal_type}>'
