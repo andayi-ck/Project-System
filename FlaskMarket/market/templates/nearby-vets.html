@@ -639,7 +639,121 @@
         background-color: rgba(214, 209, 209, 0.44);
         z-index: 9;
     }
-    
+
+
+    /* --- CHANGE MODIFIED: Adjusted display-results-container positioning --- */
+    .display-results-container {
+        display: none;
+        position: absolute; /* Changed to fixed for viewport centering */
+        top: 250px;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-image: url("https://www.woah.org/app/themes/woah/dist/images/newsletter-bg.jpg");
+        #background: url('https://www.transparenttextures.com/patterns/wood-pattern.png'), #f4e4bc;
+        border: 3px solid rgb(182, 138, 18);
+        border-radius: 10px;
+        padding: 20px;
+        max-width: 500px;
+        width: 90%;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        z-index: 102;
+        animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .display-results-container.show {
+        display: block;
+    }
+
+    .display-results-container h3 {
+        color: chocolate;
+        font-family: 'Nunito', sans-serif;
+        font-size: 1.5rem;
+        margin-bottom: 15px;
+        text-align: center;
+    }
+    .display-results-container ul {
+        padding-left: 0; /* Reset default padding */
+        margin-left: 15px; /* Shift the list to the right */
+        list-style: none; /* Remove default bullets */
+    }
+
+    .symptom-result {
+        background: #fff;
+        padding: 15px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        border-left: 4px solid rgb(40, 167, 135);
+        max-height: 200px;
+        overflow-y: auto;
+        margin-right: 15px; /* Shift each box to the right */
+    }
+
+    .symptom-result p {
+        color: #333;
+        font-family: 'Montserrat', sans-serif;
+        margin: 5px 0;
+    }
+    /* --- CHANGE ADDED: Style for action-to-take --- */
+    .symptom-result .action-to-take {
+        color: rgb(40, 167, 135);
+        font-style: italic;
+        font-size: 0.9rem;
+        margin-top: 10px;
+        border-top: 1px solid #ddd;
+        padding-top: 5px;
+        padding-left: 20px; /* Ensure space for numbers */
+    }
+    .symptom-result .action-to-take li {
+        margin-bottom: 5px; /* Space between list items */
+    }
+
+    .contact-btn {
+        background-color: rgb(40, 167, 135);
+        color: white;
+        padding: 8px 15px;
+        border-radius: 5px;
+        text-decoration: none;
+        display: inline-block;
+        margin-top: 10px;
+        font-family: 'Nunito', sans-serif;
+        transition: background-color 0.3s;
+    }
+
+    .contact-btn:hover {
+        background-color: rgb(32, 134, 108);
+    }
+
+    .display-results-container .close-btn {
+        position: absolute;
+        top: 8px;
+        border: none;
+        border-radius: 5px;
+        right: 35px;
+        font-size: 1.5rem;
+        color: chocolate;
+        cursor: pointer;
+    }
+
+    .search-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 100;
+    }
+
+    .search-overlay.show {
+        display: block;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translate(-50%, -60%); }
+        to { opacity: 1; transform: translate(-50%, -50%); }
+    }
+
 
 
     
@@ -849,6 +963,17 @@
         </div>
     </div>
 
+    <!-- --- CHANGE MODIFIED: Moved displayResultsContainer outside cards-wrapper --- -->
+    <div id="displayResultsContainer" class="display-results-container">
+        <span class="close-btn" onclick="closeDisplayResults()">×</span>
+        <h3>Symptom Checker Results</h3>
+        <div id="searchResultsContent"></div>
+    </div>
+    <div id="searchOverlay" class="search-overlay"></div>
+
+
+    
+
    <!-- CHANGE MADE: Added Symptom Checker Modal to support symptom search and illness suggestion -->
     <div id="symptomCheckerModal" class="symptom-checker-modal">
         <span class="close-btn" onclick="closeSymptomChecker()">×</span>
@@ -913,6 +1038,13 @@
         </div>
     </div>
 </div>
+
+
+<!-- --- CHANGE APPLIED: Renamed id and class to symptomCheckerOverlay --- -->
+<div id="symptomCheckerOverlay" class="symptom-checker-overlay"></div>
+<!-- --- END CHANGE --- -->
+
+
 
 
 
@@ -1108,12 +1240,23 @@
         document.getElementById('symptoms').value = '';
         document.getElementById('symptomResults').innerHTML = '';
     }
-    
-    // --- CHANGE APPLIED: Improve error handling in searchSymptoms ---
+
+    // --- CHANGE MODIFIED: Added action_to_take to the display --- -->
     function searchSymptoms() {
         const animalName = document.getElementById('animalName').value;
         const symptoms = document.getElementById('symptoms').value;
-        const resultsDiv = document.getElementById('symptomResults');
+        const resultsDiv = document.getElementById('searchResultsContent');
+
+        if (!resultsDiv) {
+            console.error('DOM element not found: searchResultsContent missing');
+            return;
+        }
+
+        if (!animalName || !symptoms) {
+            resultsDiv.innerHTML = `<p class="error" style="color: #666; font-family: 'Montserrat', sans-serif; text-align: center;">Please enter both animal name and symptoms.</p>`;
+            showResultsContainer();
+            return;
+        }
 
         fetch('/search_symptoms', {
             method: 'POST',
@@ -1126,11 +1269,8 @@
             })
         })
         .then(response => {
-            // Log the response status and headers for debugging
             console.log('Response Status:', response.status);
             console.log('Response Headers:', response.headers);
-
-            // Check if the response is OK (status 200-299)
             if (!response.ok) {
                 return response.text().then(text => {
                     throw new Error(`Server returned ${response.status}: ${text}`);
@@ -1141,24 +1281,78 @@
         .then(data => {
             resultsDiv.innerHTML = '';
             if (data.error) {
-                resultsDiv.innerHTML = `<p class="error">${data.error}</p>`;
+                resultsDiv.innerHTML = `<p class="error" style="color: #666; font-family: 'Montserrat', sans-serif; text-align: center;">${data.error}</p>`;
+            } else if (!data.diseases || data.diseases.length === 0) {
+                resultsDiv.innerHTML = `<p style="color: #666; font-family: 'Montserrat', sans-serif; text-align: center;">No matching diseases found.</p>`;
             } else {
                 const ul = document.createElement('ul');
                 data.diseases.forEach(disease => {
                     const li = document.createElement('li');
-                    li.textContent = `${disease.name} (${disease.animal_type}) - ${disease.matching_symptoms} matching symptom(s)`;
+                    li.className = 'symptom-result';
+    
+                    // Split action_to_take into individual actions
+                    const actions = disease.action_to_take ? disease.action_to_take.split('. ').filter(action => action.trim() !== '') : [];
+                    const actionList = actions.length > 0
+                        ? `<ol class="action-to-take">${actions.map(action => `<li>${action}${action.endsWith('.') ? '' : '.'}</li>`).join('')}</ol>`
+                        : '<p class="action-to-take"><strong>Action to Take:</strong> Consult a veterinarian for advice.</p>';
+    
+                    li.innerHTML = `
+                        <p><strong>${disease.name}</strong> (${disease.animal_type})</p>
+                        <p>${disease.matching_symptoms} matching symptom(s)</p>
+                        ${actionList}
+                    `;
                     ul.appendChild(li);
                 });
                 resultsDiv.appendChild(ul);
             }
+            showResultsContainer();
         })
         .catch(error => {
             console.error('Fetch Error:', error);
-            resultsDiv.innerHTML = `<p class="error">Error searching symptoms: ${error.message}</p>`;
+            resultsDiv.innerHTML = `<p class="error" style="color: #666; font-family: 'Montserrat', sans-serif; text-align: center;">Error searching symptoms: ${error.message}</p>`;
+            showResultsContainer();
         });
     }
-    // --- END CHANGE ---
 
+    function showResultsContainer() {
+        const container = document.getElementById('displayResultsContainer');
+        const overlay = document.getElementById('searchOverlay');
+        if (container && overlay) {
+            container.classList.add('show');
+            overlay.classList.add('show');
+        } else {
+            console.error('displayResultsContainer or searchOverlay not found');
+        }
+    }
+
+    function closeDisplayResults() {
+        document.getElementById('displayResultsContainer').classList.remove('show');
+        document.getElementById('searchOverlay').classList.remove('show');
+    }
+
+    document.getElementById('searchOverlay').addEventListener('click', closeDisplayResults);
+
+    window.onclick = function(event) {
+        const scheduleModal = document.getElementById('scheduleModal');
+        const profileModal = document.getElementById('profileModal');
+        const symptomCheckerModal = document.getElementById('symptomCheckerModal');
+        const displayResultsContainer = document.getElementById('displayResultsContainer');
+        if (event.target === scheduleModal) {
+            closeModal();
+        }
+        if (event.target === profileModal) {
+            closeProfileModal();
+        }
+        if (event.target === symptomCheckerModal) {
+            closeSymptomChecker();
+        }
+        if (event.target === displayResultsContainer) {
+            closeDisplayResults();
+        }
+    };
+
+    
+    
 
 </script>
 </body>
