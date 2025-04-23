@@ -188,6 +188,7 @@ class SymptomCheckerDisease(db.Model):
     name = db.Column(db.String(100), nullable=False)  # Disease name (e.g., "Foot-and-Mouth Disease")
     animal_type = db.Column(db.String(50), nullable=False)  # Animal type (e.g., "Cattle", "Poultry")
     symptoms = db.Column(db.String(500), nullable=False)  # Symptoms as a comma-separated string (e.g., "fever,blisters on mouth,lameness")
-
+    action_to_take = db.Column(db.Text)
+    
     def __repr__(self):
         return f'<SymptomCheckerDisease {self.name} for {self.animal_type}>'
