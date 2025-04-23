@@ -760,6 +760,7 @@ def add_vet():
 
 
 
+
 # Define synonyms for animal types
 ANIMAL_SYNONYMS = {
     'cow': ['cow', 'cattle', 'calf', 'bovine'],
@@ -780,9 +781,29 @@ ANIMAL_SYNONYMS = {
     'camel': ['camel', 'dromedary', 'bactrian']
 }
 
+
+# Predefined symptom synonyms (from previous implementation)
+SYMPTOM_SYNONYMS = {
+    "high temperature": "fever",
+    "elevated temperature": "fever",
+    "coughing": "cough",
+    "runny nose": "nasal discharge",
+    "sneezing": "nasal discharge",
+    "tiredness": "lethargy",
+    "weakness": "lethargy",
+    "breathing difficulty": "respiratory distress",
+    "lameness": "limping",
+    "rapid breathing": "respiratory distress",
+    "weight loss": "emaciation",
+    "swollen udder": "painful udder",
+    "milk clots": "reduced milk yield",
+    "redness of udder": "painful udder"
+}
+
 @app.route('/search_symptoms', methods=['POST'])
 def search_symptoms():
     try:
+        # Parse input
         data = request.get_json()
         animal_name = data.get('animal_name', '').strip().lower()
         raw_symptoms = data.get('symptoms', '').strip().lower().split(',')[:7]
@@ -793,34 +814,51 @@ def search_symptoms():
         symptoms = [s for s in symptoms if s]
         if not animal_name or not symptoms:
             return jsonify({'error': 'Please provide both animal name and symptoms.'}), 400
-        
+
         print(f"Input - Animal: {animal_name}, Symptoms: {symptoms}")
 
-        # Get possible synonyms for the animal name
+        # Normalize animal name using synonyms
         animal_synonyms = []
         for key, synonyms in ANIMAL_SYNONYMS.items():
             if animal_name in synonyms:
                 animal_synonyms.extend(synonyms)
+                animal_name = key  # Standardize to the key (e.g., "cow" -> "cattle")
                 break
         if not animal_synonyms:
             animal_synonyms = [animal_name]
         print(f"Animal synonyms: {animal_synonyms}")
 
+        # Normalize symptoms using synonyms
+        normalized_symptoms = []
+        for symptom in symptoms:
+            normalized_symptom = SYMPTOM_SYNONYMS.get(symptom, symptom)
+            normalized_symptoms.append(normalized_symptom)
+        print(f"Normalized symptoms: {normalized_symptoms}")
+
+        # Fetch diseases from the database
         diseases = SymptomCheckerDisease.query.all()
         print(f"Total diseases queried: {len(diseases)}")
 
+        # Match diseases based on animal type and symptoms
         matching_diseases = []
         for disease in diseases:
             print(f"Checking disease: {disease.name}, Animal Type: {disease.animal_type}, Symptoms: {disease.symptoms}")
+            
             # Check if any synonym matches the animal type
             animal_type_lower = disease.animal_type.lower()
             if any(synonym in animal_type_lower for synonym in animal_synonyms):
                 print(f"Animal match: {animal_name} (via {animal_synonyms}) found in {animal_type_lower}")
                 
-                disease_symptoms = [s.strip() for s in disease.symptoms.lower().split(',')]
+                # Parse disease symptoms
+                disease_symptoms = [s.strip().lower() for s in disease.symptoms.split(',')]
+                if not disease_symptoms:
+                    print(f"No symptoms found for disease: {disease.name}")
+                    continue
+
+                # Simple string-based matching for symptoms
                 matching_symptom_count = 0
                 matched_symptoms = set()
-                for input_symptom in symptoms:
+                for input_symptom in normalized_symptoms:
                     for db_symptom in disease_symptoms:
                         if input_symptom in db_symptom or db_symptom in input_symptom:
                             matching_symptom_count += 1
@@ -832,20 +870,21 @@ def search_symptoms():
                     matching_diseases.append({
                         'name': disease.name,
                         'animal_type': disease.animal_type,
-                        'matching_symptoms': matching_symptom_count
+                        'matching_symptoms': matching_symptom_count,
+                        'action_to_take': disease.action_to_take  # Include action_to_take
                     })
-        
-        print(f"Matching diseases: {matching_diseases}")
+                    print(f"Added disease: {disease.name} with {matching_symptom_count} matching symptoms")
 
+        # Sort by number of matching symptoms and limit to top 3
         matching_diseases.sort(key=lambda x: x['matching_symptoms'], reverse=True)
         matching_diseases = matching_diseases[:3]
+        print(f"Matching diseases: {matching_diseases}")
+
         if not matching_diseases:
             return jsonify({'error': 'No matching diseases found for the given symptoms.'}), 404
         return jsonify({'diseases': matching_diseases})
     except Exception as e:
         print(f"Exception occurred: {str(e)}")
         return jsonify({'error': f'Server error: {str(e)}'}), 500
-
-
 
 
